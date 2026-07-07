@@ -13,19 +13,32 @@ let tumIslemler = [];
 const API_URL = 'https://ertisya-backend.mehmetberkucmakli.workers.dev/api/giderler';
 
 // 2. Sunucudan Verileri Çeken ve Kasa Bakiyesini Hesaplayan Ana Fonksiyon
+// Verileri backend'den çeken ve köprüyü kuran fonksiyon
 async function finansalVerileriGetir() {
     try {
         const response = await fetch(API_URL);
-        tumIslemler = await response.json();
         
-        // Listeyi ekrana basmadan önce temizle ve güncel haliyle yeniden oluştur
+        // Eğer bağlantı hatası varsa (404, 500 gibi) fırlat
+        if (!response.ok) {
+            throw new Error('Backend bağlantı hatası: ' + response.status);
+        }
+
+        const tumIslemler = await response.json();
+        
+        // Veri başarıyla geldi mi? Konsolda görelim:
+        console.log("Köprü kuruldu, veri geldi:", tumIslemler);
+
+        // Verileri ekrana bas
         ekranaBas(tumIslemler);
-        kasaBakiyesiHesapla(tumIslemler);
+        kasaBakiyesiniHesapla(tumIslemler);
 
     } catch (error) {
-        console.error('Finansal veriler yüklenirken hata oluştu:', error);
+        console.error('Köprü kurulamadı:', error);
     }
 }
+
+// Sayfa açıldığında bu fonksiyonu tetikle ki veri hemen gelsin
+finansalVerileriGetir();
 
 // 3. Verileri HTML Listesine Dinamik Olarak Basan Fonksiyon
 function ekranaBas(islemler) {

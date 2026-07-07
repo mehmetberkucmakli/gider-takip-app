@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007bff">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Yazılım ve Bilişim Şiriketi - Finans Paneli</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
 
     <div class="container">
         <h1> Yazılım ve Bilişim Şirketi</h1>
