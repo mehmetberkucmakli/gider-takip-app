@@ -1,0 +1,195 @@
+/* 1. Genel Ayarlar (Global) */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f0f3f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #2c3e50;
+    padding: 20px; /* Mobil ekranlarda kenarlardan taşmasın diye can simidi boşluğumuz */
+}
+
+/* 2. Ana Kapsayıcı (Kapsama Alanı Genişletildi) */
+.container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 650px; /* Kurumsal paneller için alanı biraz daha ferahlattık */
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #1a252f;
+    font-size: 26px;
+}
+
+h2 {
+    margin-top: 25px;
+    margin-bottom: 15px;
+    color: #34495e;
+    font-size: 18px;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 6px;
+}
+
+/* 3. Kasa Özet Paneli Tasarımı */
+.kasa-özet {
+    background: #ebf5fb;
+    border-left: 5px solid #3498db;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.ozet-kutu {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#toplamBakiye {
+    color: #27ae60; /* İlk başta pozitif kabul edip yeşil yapıyoruz */
+    transition: color 0.3s;
+}
+
+/* 4. Arama Çubuğu Tasarımı */
+.arama-alani {
+    margin-bottom: 20px;
+}
+
+.arama-alani input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.arama-alani input:focus {
+    border-color: #3498db;
+}
+
+/* 5. Kurumsal Form Düzeni */
+#finansForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#finansForm input, #finansForm select {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    background-color: #fff;
+    transition: border-color 0.3s;
+}
+
+#finansForm input:focus, #finansForm select:focus {
+    border-color: #3498db;
+}
+
+#finansForm button {
+    background-color: #2980b9; /* Şirket paneline uygun kurumsal mavi buton */
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#finansForm button:hover {
+    background-color: #2471a3;
+}
+
+/* 6. Dinamik Gelir / Gider Satırları (Mülakatlık Can Alıcı Bölüm) */
+#islemListesi {
+    list-style: none;
+    padding: 0;
+}
+
+#islemListesi li {
+    background: #f8f9fa;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+/* İstediğin Gelir (Yeşil) ve Gider (Kırmızı) Durum Çizgileri */
+#islemListesi li.gelir-satiri {
+    border-left: 6px solid #2ecc71; /* Gelirler sol tarafta kalın yeşil şeritle ayrışır */
+}
+
+#islemListesi li.gider-satiri {
+    border-left: 6px solid #e74c3c; /* Giderler sol tarafta kalın kırmızı şeritle ayrışır */
+}
+
+.sil-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+}
+
+.sil-btn:hover {
+    background-color: #c0392b;
+}
+
+/* 7. Mobil Uyumluluk (Responsive Design) Mimarisi */
+/* Ekran genişliği 600px ve altına düştüğünde (Telefonlar) bu kurallar çalışır */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    /* Mobilde parmakla basmayı kolaylaştırmak için elemanları biraz daha büyütüyoruz */
+    #finansForm input, #finansForm select, #finansForm button {
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    #islemListesi li {
+        flex-direction: column; /* Mobilde yazılar ve sil butonu alt alta gelsin ki sıkışmasın */
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .sil-btn {
+        width: 100%; /* Mobilde silme butonu satırı kaplasın, kolay basılsın */
+        text-align: center;
+        padding: 10px;
+    }
+}

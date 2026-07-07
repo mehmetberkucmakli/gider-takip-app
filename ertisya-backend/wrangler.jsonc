@@ -1,0 +1,9 @@
+{
+  "name": "ertisya-backend",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-07",
+  "vars": {
+    "SUPABASE_URL": "https://mjmmfyuymrzsdeymnfvs.supabase.co",
+    "SUPABASE_KEY": "sb_publishable_aa2L1It-Ee8Bu1wd783kMw_lprHEpMk"
+  }
+}
