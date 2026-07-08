@@ -9,6 +9,21 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="auth-container" style="text-align: center; margin-top: 50px;">
+        <h2>Ertisya Finans Giriş</h2>
+        <input type="email" id="email" placeholder="E-posta"><br>
+        <input type="password" id="sifre" placeholder="Şifre"><br>
+        <button onclick="girisYap()">Giriş Yap</button>
+    </div>
+
+    <div id="app-container" style="display: none;">
+        <div class="container">
+            <h1> Yazılım ve Bilişim Şirketi</h1>
+            </div>
+    </div>
+
+    <script src="script.js"></script>
+    
     <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
@@ -50,7 +65,8 @@
         <ul id="islemListesi">
             </ul>
     </div>
-
-    <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+    <script src="script.js?v=3"></script>
 </body>
 </html>
