@@ -1,16 +1,17 @@
-// Supabase'i global olarak tanımla
+// Supabase değişkenleri
 const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
 const supabaseKey = 'sb_publishable_aa2L1IT-Ee8Bulwd783kMw_lprHEpMk';
 
-// "window.sb" yaparak tarayıcının her yerinden ulaşılabilir hale getiriyoruz
-window.sb = supabase.createClient(supabaseUrl, supabaseKey);
+// Eğer 'window.sb' zaten tanımlanmadıysa tanımla (bu hatayı engeller)
+if (!window.sb) {
+    window.sb = supabase.createClient(supabaseUrl, supabaseKey);
+    console.log("Supabase istemcisi başarıyla başlatıldı.");
+}
 
 async function girisYap() {
-    console.log("Giriş yapılıyor...");
     const email = document.getElementById('email').value;
     const password = document.getElementById('sifre').value;
 
-    // window.sb üzerinden erişiyoruz
     const { error } = await window.sb.auth.signInWithPassword({
         email: email,
         password: password,
@@ -19,7 +20,7 @@ async function girisYap() {
     if (error) {
         alert("Hata: " + error.message);
     } else {
-        alert("Başarılı!");
+        alert("Giriş başarılı!");
         window.location.reload();
     }
 }
