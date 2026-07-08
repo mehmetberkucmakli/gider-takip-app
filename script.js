@@ -1,11 +1,9 @@
-// 1. SUPABASE KURULUMU
+// 1. SUPABASE KURULUMU (TEK VE DOĞRU YER)
 const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
-// Sadece 'anon' (Yayınlanabilir) anahtarını buraya yazıyoruz!
 const supabaseKey = 'sb_publishable_aa2L1IT-Ee8Bulwd783kMw_lprHEpMk'; 
-
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// 2. GİRİŞ KONTROLÜ
+// 2. GİRİŞ KONTROLÜ (Giriş yapılmış mı?)
 async function kontrolEt() {
     const { data: { session } } = await supabase.auth.getSession();
     const authDiv = document.getElementById('auth-container');
@@ -37,4 +35,5 @@ async function girisYap() {
     }
 }
 
+// Sayfa açıldığında kontrolü başlat
 kontrolEt();

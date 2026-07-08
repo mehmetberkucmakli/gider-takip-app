@@ -193,3 +193,8 @@ h2 {
         padding: 10px;
     }
 }
+/* Diğer tüm kodlarının en sonuna şunu ekle */
+
+#app-container { 
+    display: none; 
+}
