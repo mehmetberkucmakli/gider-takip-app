@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007bff">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Yazılım ve Bilişim Şiriketi - Finans Paneli</title>
+    <title>Yazılım ve Bilişim Şirketi - Finans Paneli</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div id="auth-container" style="text-align: center; margin-top: 50px;">
         <h2>Ertisya Finans Giriş</h2>
         <input type="email" id="email" placeholder="E-posta"><br>
@@ -16,56 +16,36 @@
         <button onclick="girisYap()">Giriş Yap</button>
     </div>
 
-    <div id="app-container" style="display: none;">
-        <div class="container">
-            <h1> Yazılım ve Bilişim Şirketi</h1>
-            </div>
-    </div>
-
-    <script src="script.js"></script>
-    
-    <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
-
-    <div class="container">
-        <h1> Yazılım ve Bilişim Şirketi</h1>
-        
+    <div id="app-container" style="display: none;" class="container">
+        <h1>Yazılım ve Bilişim Şirketi</h1>
         <div class="kasa-özet">
             <div class="ozet-kutu">Şirket Kasa Bakiyesi: <span id="toplamBakiye">0 TL</span></div>
         </div>
-
         <div class="arama-alani">
-            <input type="text" id="aramaKutusu" placeholder="İşlem ara... (Örn: Sunucu, Lisans Satışı, MacBook)">
+            <input type="text" id="aramaKutusu" placeholder="İşlem ara...">
         </div>
-
         <h2>Yeni Finansal İşlem Kaydı</h2>
         <form id="finansForm">
-            <input type="text" id="aciklama" placeholder="İşlem Açıklaması (Örn: AWS Bulut Sunucu Ödemesi)" required>
-            <input type="number" id="miktar" placeholder="Tutar (TL)" required min="1">
-            
+            <input type="text" id="aciklama" placeholder="İşlem Açıklaması" required>
+            <input type="number" id="miktar" placeholder="Tutar (TL)" required>
             <select id="kategori" required>
                 <option value="" disabled selected>Kategori Seçin</option>
-                <option value="Proje/Yazılım Satışı">Proje / Özel Yazılım Satışı (Gelir)</option>
-                <option value="SaaS/Lisans Aboneliği">SaaS / Lisans Abonelik Geliri (Gelir)</option>
-                <option value="Bakım & Destek Sözleşmesi">Yazılım Bakım & Destek Geliri (Gelir)</option>
-                <option value="Bulut & Sunucu Servisleri">Bulut Sunucu & API Servisleri (AWS/Azure)</option>
-                <option value="Demirbaş & Donanım">Geliştirici Bilgisayarı & Ekipman Alımı</option>
-                <option value="Personel & Freelancer">Yazılımcı Maaş / Freelancer Ödemeleri</option>
-                <option value="Reklam & Pazarlama">Yazılım Reklam & Pazarlama Giderleri</option>
-                <option value="Genel Giderler">Diğer Genel Giderler</option>
+                <option value="Gelir">Gelir</option>
+                <option value="Gider">Gider</option>
             </select>
-
             <button type="submit">Sisteme İşle</button>
         </form>
-
         <h2>Finansal Hareket Geçmişi</h2>
-        <ul id="islemListesi">
-            </ul>
+        <ul id="islemListesi"></ul>
     </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
 </body>
 </html>
