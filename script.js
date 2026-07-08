@@ -7,47 +7,44 @@ const islemListesiDOM = document.getElementById('islemListesi');
 const toplamBakiyeDOM = document.getElementById('toplamBakiye');
 const aramaKutusu = document.getElementById('aramaKutusu');
 
-// Tüm finansal hareketleri hafızada tutacağımız yerel dizi (Arama yaparken kullanacağız)
+// Tüm finansal hareketleri hafızada tutacağımız yerel dizi
 let tumIslemler = [];
 
 const API_URL = 'https://ertisya-backend.mehmetberkucmakli.workers.dev/api/giderler';
 
-// 2. Sunucudan Verileri Çeken ve Kasa Bakiyesini Hesaplayan Ana Fonksiyon
-// Verileri backend'den çeken ve köprüyü kuran fonksiyon
+// 2. Sunucudan Verileri Çeken Ana Fonksiyon
 async function finansalVerileriGetir() {
     try {
         const response = await fetch(API_URL);
         
-        // Eğer bağlantı hatası varsa (404, 500 gibi) fırlat
         if (!response.ok) {
             throw new Error('Backend bağlantı hatası: ' + response.status);
         }
 
-        const tumIslemler = await response.json();
+        // Düzeltme: const kaldırıldı, dışarıdaki tumIslemler güncelleniyor
+        tumIslemler = await response.json();
         
-        // Veri başarıyla geldi mi? Konsolda görelim:
         console.log("Köprü kuruldu, veri geldi:", tumIslemler);
 
-        // Verileri ekrana bas
         ekranaBas(tumIslemler);
-        kasaBakiyesiniHesapla(tumIslemler);
+        // Düzeltme: Fonksiyon ismi doğru yazıldı
+        kasaBakiyesiHesapla(tumIslemler);
 
     } catch (error) {
         console.error('Köprü kurulamadı:', error);
     }
 }
 
-// Sayfa açıldığında bu fonksiyonu tetikle ki veri hemen gelsin
+// Sayfa açıldığında veriyi getir
 finansalVerileriGetir();
 
-// 3. Verileri HTML Listesine Dinamik Olarak Basan Fonksiyon
+// 3. Verileri HTML Listesine Basan Fonksiyon
 function ekranaBas(islemler) {
     islemListesiDOM.innerHTML = '';
 
     islemler.forEach(islem => {
         const li = document.createElement('li');
         
-        // İşlem tipine göre CSS sınıfı atıyoruz (Yeşil veya Kırmızı şerit)
         if (islem.islemTipi === 'gelir') {
             li.classList.add('gelir-satiri');
         } else {
@@ -65,36 +62,28 @@ function ekranaBas(islemler) {
     });
 }
 
-// 4. Kasa Bakiyesini (Gelir - Gider) Hesaplayan Algoritma (Business Logic)
+// 4. Kasa Bakiyesini Hesaplayan Algoritma
 function kasaBakiyesiHesapla(islemler) {
     const netBakiye = islemler.reduce((toplam, islem) => {
-        const miktar = parseFloat(islem.miktar);
+        const miktar = parseFloat(islem.miktar) || 0;
         if (islem.islemTipi === 'gelir') {
-            return toplam + miktar; // Gelir ise kasaya ekle
+            return toplam + miktar;
         } else {
-            return toplam - miktar; // Gider ise kasadan düş
+            return toplam - miktar;
         }
     }, 0);
 
-    // Bakiyeyi ekrana yazdırıyoruz
     toplamBakiyeDOM.textContent = `${netBakiye} TL`;
-
-    // Eğer şirket zarardaysa bakiyeyi kırmızı, kârdaysa yeşil yapıyoruz
-    if (netBakiye < 0) {
-        toplamBakiyeDOM.style.color = '#e74c3c'; // Kırmızı
-    } else {
-        toplamBakiyeDOM.style.color = '#27ae60'; // Yeşil
-    }
+    toplamBakiyeDOM.style.color = netBakiye < 0 ? '#e74c3c' : '#27ae60';
 }
 
-// 5. Yeni İşlem Ekleme (POST) Fonksiyonu - Akıllı Kategori Kontrollü
+// 5. Yeni İşlem Ekleme (POST)
 finansForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const secilenKategori = kategoriSelect.value;
-    let otomatikIslemTipi = 'gider'; // Varsayılan olarak gider kabul edelim
+    let otomatikIslemTipi = 'gider'; 
 
-    // Eğer seçilen kategori bu üç gelir kaleminden biriyse tipi otomatik 'gelir' yapıyoruz
     if (
         secilenKategori === 'Proje/Yazılım Satışı' ||
         secilenKategori === 'SaaS/Lisans Aboneliği' ||
@@ -104,7 +93,7 @@ finansForm.addEventListener('submit', async (e) => {
     }
 
     const yeniIslem = {
-        islemTipi: otomatikIslemTipi, // Algoritma bizim yerimize kararı verdi!
+        islemTipi: otomatikIslemTipi,
         aciklama: aciklamaInput.value,
         miktar: miktarInput.value,
         kategori: secilenKategori
@@ -113,24 +102,22 @@ finansForm.addEventListener('submit', async (e) => {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(yeniIslem)
         });
 
         if (response.ok) {
             finansForm.reset();
-            finansalVerileriGetir(); // Kasayı ve listeyi güncelle
+            finansalVerileriGetir(); 
         }
     } catch (error) {
-        console.error('İşlem kaydedilirken hata oluştu:', error);
+        console.error('İşlem kaydedilirken hata:', error);
     }
 });
 
-// 6. İşlem Silme (DELETE) Fonksiyonu
+// 6. İşlem Silme (DELETE)
 async function islemSil(id) {
-    if (!confirm('Bu finansal kaydı silmek istediğinize emin misiniz? Şirket muhasebe kayıtlarından kaldırılacaktır.')) return;
+    if (!confirm('Bu kaydı silmek istediğinize emin misiniz?')) return;
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
@@ -141,21 +128,16 @@ async function islemSil(id) {
             finansalVerileriGetir();
         }
     } catch (error) {
-        console.error('Kayıt silinirken hata oluştu:', error);
+        console.error('Silme hatası:', error);
     }
 }
 
-// 7. GERÇEK ZAMANLI ARAMA MOTORU (Real-time Search)
+// 7. Arama Motoru
 aramaKutusu.addEventListener('keyup', (e) => {
     const arananKelime = e.target.value.toLowerCase();
-
-    const filtrelenmişIslemler = tumIslemler.filter(islem => {
-        return islem.aciklama.toLowerCase().includes(arananKelime) || 
-               islem.kategori.toLowerCase().includes(arananKelime);
-    });
-
-    ekranaBas(filtrelenmişIslemler);
+    const filtrelenmisIslemler = tumIslemler.filter(islem => 
+        islem.aciklama.toLowerCase().includes(arananKelime) || 
+        islem.kategori.toLowerCase().includes(arananKelime)
+    );
+    ekranaBas(filtrelenmisIslemler);
 });
-
-// Sayfa ilk yüklendiğinde mevcut verileri getir
-finansalVerileriGetir();
