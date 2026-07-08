@@ -2,11 +2,11 @@
 const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
 const supabaseKey = 'sb_publishable_aa2L1IT-Ee8Bulwd783kMw_lprHEpMk';
 
-// Supabase istemcisi
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+// Supabase istemcisi - İsmi 'sb' olarak güncelledik ki çakışma olmasın
+const sb = supabase.createClient(supabaseUrl, supabaseKey);
 
-// Hata ayıklama: Supabase yüklendi mi?
-console.log("Supabase istemcisi:", supabase);
+// Hata ayıklama
+console.log("Supabase istemcisi başarıyla yüklendi:", sb);
 
 // Fonksiyonları tanımla
 async function girisYap() {
@@ -14,7 +14,8 @@ async function girisYap() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('sifre').value;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    // Burada artık 'sb' kullanıyoruz
+    const { error } = await sb.auth.signInWithPassword({
         email: email,
         password: password,
     });
