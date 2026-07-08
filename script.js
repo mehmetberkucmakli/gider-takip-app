@@ -1,6 +1,6 @@
 // 1. SUPABASE KURULUMU (Temiz başlangıç)
 const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
-const supabaseKey = 'sb_publishable_aa2L1IT-Ee8Bu1wd783kMw_lprHEpMk'; 
+const supabaseKey = 'sb_secret_BbxDv2guQ-UMga_rTlvtmw_VaZ7910n'; 
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // 2. HTML ELEMANLARI
