@@ -1,10 +1,20 @@
-// 1. SUPABASE KURULUMU (TEK VE DOĞRU YER)
-const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
-const supabaseKey = 'sb_publishable_aa2L1IT-Ee8Bulwd783kMw_lprHEpMk'; 
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+// 1. Değişkenleri en başa al
+let supabase;
 
-// 2. GİRİŞ KONTROLÜ (Giriş yapılmış mı?)
+// 2. Sayfa yüklendiğinde Supabase'i başlat
+document.addEventListener('DOMContentLoaded', () => {
+    const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
+    const supabaseKey = 'sb_publishable_aa2L1IT-Ee8Bulwd783kMw_lprHEpMk';
+    supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    
+    // Kurulum bittikten sonra kontrolü başlat
+    kontrolEt();
+});
+
+// 3. Kontrol fonksiyonu
 async function kontrolEt() {
+    if (!supabase) return; // Supabase hazır değilse bekle
+    
     const { data: { session } } = await supabase.auth.getSession();
     const authDiv = document.getElementById('auth-container');
     const appDiv = document.getElementById('app-container');
@@ -18,7 +28,7 @@ async function kontrolEt() {
     }
 }
 
-// 3. GİRİŞ YAPMA FONKSİYONU
+// 4. Giriş fonksiyonu
 async function girisYap() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('sifre').value;
@@ -29,11 +39,8 @@ async function girisYap() {
     });
 
     if (error) {
-        alert("Giriş başarısız: " + error.message);
+        alert("Hata: " + error.message);
     } else {
-        location.reload(); 
+        location.reload();
     }
 }
-
-// Sayfa açıldığında kontrolü başlat
-kontrolEt();
