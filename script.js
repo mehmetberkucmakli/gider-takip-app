@@ -1,34 +1,26 @@
-// 1. Değişkenleri en başa al
-let supabase;
+// 1. Merkezi Supabase Kurulumu (Hataları önlemek için 'let' ve 'const' yapısı)
+const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
+const supabaseKey = 'sb_publishable_aa2L1IT-Ee8Bulwd783kMw_lprHEpMk'; // 'anon' anahtarın
 
-// 2. Sayfa yüklendiğinde Supabase'i başlat
-document.addEventListener('DOMContentLoaded', () => {
-    const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
-    const supabaseKey = 'sb_publishable_aa2L1IT-Ee8Bulwd783kMw_lprHEpMk';
-    supabase = supabase.createClient(supabaseUrl, supabaseKey);
-    
-    // Kurulum bittikten sonra kontrolü başlat
-    kontrolEt();
-});
+// Supabase istemcisini oluştur
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// 3. Kontrol fonksiyonu
+// 2. Giriş Kontrol Fonksiyonu
 async function kontrolEt() {
-    if (!supabase) return; // Supabase hazır değilse bekle
-    
     const { data: { session } } = await supabase.auth.getSession();
     const authDiv = document.getElementById('auth-container');
     const appDiv = document.getElementById('app-container');
 
     if (session) {
-        if(authDiv) authDiv.style.display = 'none';
-        if(appDiv) appDiv.style.display = 'block';
+        if (authDiv) authDiv.style.display = 'none';
+        if (appDiv) appDiv.style.display = 'block';
     } else {
-        if(authDiv) authDiv.style.display = 'block';
-        if(appDiv) appDiv.style.display = 'none';
+        if (authDiv) authDiv.style.display = 'block';
+        if (appDiv) appDiv.style.display = 'none';
     }
 }
 
-// 4. Giriş fonksiyonu
+// 3. Giriş Yapma Fonksiyonu
 async function girisYap() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('sifre').value;
@@ -39,8 +31,11 @@ async function girisYap() {
     });
 
     if (error) {
-        alert("Hata: " + error.message);
+        alert("Giriş başarısız: " + error.message);
     } else {
-        location.reload();
+        location.reload(); // Başarılı girişten sonra sayfayı yenile
     }
 }
+
+// 4. Sayfa yüklendiğinde otomatik başlat
+window.onload = kontrolEt;
