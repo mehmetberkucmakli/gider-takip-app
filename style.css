@@ -279,6 +279,13 @@ h2 {
     text-align: center;
 }
 
+.user-badge {
+    color: #52616f;
+    font-size: 13px;
+    text-align: right;
+    margin-bottom: 8px;
+}
+
 @media (max-width: 600px) {
     .islem-actions {
         width: 100%;

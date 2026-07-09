@@ -148,7 +148,16 @@ function girisiGoster() {
 function uygulamayiGoster() {
     document.getElementById('auth-container').style.display = 'none';
     document.getElementById('app-container').style.display = 'block';
+    aktifKullaniciBilgisiniGoster();
     cikisButonuEkle();
+}
+
+function aktifKullaniciBilgisiniGoster() {
+    const element = document.getElementById('aktifKullaniciBilgisi');
+
+    if (!element || !aktifKullanici) return;
+
+    element.textContent = `Aktif hesap: ${aktifKullanici.email}`;
 }
 
 function cikisButonuEkle() {
