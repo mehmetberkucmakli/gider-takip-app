@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('aramaKutusu')?.addEventListener('input', (event) => {
         islemleriListele(event.target.value);
     });
+    document.getElementById('tipFiltresi')?.addEventListener('change', () => islemleriListele());
+    document.getElementById('donemFiltresi')?.addEventListener('change', () => islemleriListele());
+    document.getElementById('kategoriFiltresi')?.addEventListener('change', () => islemleriListele());
 });
 
 async function girisYap() {
@@ -193,6 +196,7 @@ async function giderleriYukle() {
     }
 
     tumIslemler = data || [];
+    kategoriFiltresiniGuncelle();
     islemleriListele();
 }
 
@@ -306,14 +310,27 @@ async function aktifKullaniciyiGetir() {
 function islemleriListele(aramaMetni = '') {
     const liste = document.getElementById('islemListesi');
     const toplamBakiye = document.getElementById('toplamBakiye');
-    const filtre = aramaMetni.toLocaleLowerCase('tr-TR');
+    const aramaKutusu = document.getElementById('aramaKutusu');
+    const tipFiltresi = document.getElementById('tipFiltresi')?.value || 'tum';
+    const donemFiltresi = document.getElementById('donemFiltresi')?.value || 'tum';
+    const kategoriFiltresi = document.getElementById('kategoriFiltresi')?.value || 'tum';
+    const filtre = (aramaMetni || aramaKutusu?.value || '').toLocaleLowerCase('tr-TR');
 
     liste.innerHTML = '';
 
     const gosterilecekIslemler = tumIslemler.filter((islem) => {
         const aciklama = String(islem.aciklama || '').toLocaleLowerCase('tr-TR');
         const kategori = String(islem.kategori || '').toLocaleLowerCase('tr-TR');
-        return aciklama.includes(filtre) || kategori.includes(filtre);
+        const isGelir = islem.islemTipi === 'gelir' || islem.kategori === 'Gelir';
+        const metinUyuyor = aciklama.includes(filtre) || kategori.includes(filtre);
+        const tipUyuyor =
+            tipFiltresi === 'tum' ||
+            (tipFiltresi === 'gelir' && isGelir) ||
+            (tipFiltresi === 'gider' && !isGelir);
+        const kategoriUyuyor = kategoriFiltresi === 'tum' || islem.kategori === kategoriFiltresi;
+        const donemUyuyor = islemDonemeUyuyor(islem, donemFiltresi);
+
+        return metinUyuyor && tipUyuyor && kategoriUyuyor && donemUyuyor;
     });
 
     gosterilecekIslemler.forEach((islem) => {
@@ -335,7 +352,7 @@ function islemleriListele(aramaMetni = '') {
         liste.appendChild(li);
     });
 
-    const bakiye = tumIslemler.reduce((toplam, islem) => {
+    const bakiye = gosterilecekIslemler.reduce((toplam, islem) => {
         const miktar = Number(islem.miktar) || 0;
         const isGelir = islem.islemTipi === 'gelir' || islem.kategori === 'Gelir';
         return toplam + (isGelir ? miktar : -miktar);
@@ -343,4 +360,57 @@ function islemleriListele(aramaMetni = '') {
 
     toplamBakiye.textContent = `${bakiye.toLocaleString('tr-TR')} TL`;
     toplamBakiye.style.color = bakiye >= 0 ? '#27ae60' : '#e74c3c';
+}
+
+function kategoriFiltresiniGuncelle() {
+    const select = document.getElementById('kategoriFiltresi');
+
+    if (!select) return;
+
+    const seciliDeger = select.value;
+    const kategoriler = [...new Set(tumIslemler.map((islem) => islem.kategori).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b, 'tr')
+    );
+
+    select.innerHTML = '<option value="tum">Tum kategoriler</option>';
+
+    kategoriler.forEach((kategori) => {
+        const option = document.createElement('option');
+        option.value = kategori;
+        option.textContent = kategori;
+        select.appendChild(option);
+    });
+
+    if ([...select.options].some((option) => option.value === seciliDeger)) {
+        select.value = seciliDeger;
+    }
+}
+
+function islemDonemeUyuyor(islem, donem) {
+    if (donem === 'tum') return true;
+
+    const tarih = tarihMetniniTariheCevir(islem.tarih);
+
+    if (!tarih) return false;
+
+    const bugun = new Date();
+    const hedefYil = bugun.getFullYear();
+    const hedefAy = donem === 'bu-ay' ? bugun.getMonth() : bugun.getMonth() - 1;
+    const hedefTarih = new Date(hedefYil, hedefAy, 1);
+
+    return tarih.getFullYear() === hedefTarih.getFullYear() && tarih.getMonth() === hedefTarih.getMonth();
+}
+
+function tarihMetniniTariheCevir(tarihMetni) {
+    if (!tarihMetni) return null;
+
+    const parcalar = String(tarihMetni).split('.');
+
+    if (parcalar.length !== 3) return null;
+
+    const [gun, ay, yil] = parcalar.map(Number);
+
+    if (!gun || !ay || !yil) return null;
+
+    return new Date(yil, ay - 1, gun);
 }

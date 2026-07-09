@@ -81,6 +81,22 @@ h2 {
     border-color: #3498db;
 }
 
+.filtre-alani {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filtre-alani select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #c8d0d8;
+    border-radius: 6px;
+    background-color: #fff;
+    font-size: 14px;
+}
+
 /* 5. Kurumsal Form Düzeni */
 #finansForm {
     display: flex;
@@ -206,6 +222,15 @@ h2 {
 
     /* Mobilde parmakla basmayı kolaylaştırmak için elemanları biraz daha büyütüyoruz */
     #finansForm input, #finansForm select, #finansForm button {
+        padding: 14px;
+        font-size: 15px;
+    }
+
+    .filtre-alani {
+        grid-template-columns: 1fr;
+    }
+
+    .filtre-alani select {
         padding: 14px;
         font-size: 15px;
     }

@@ -27,6 +27,21 @@
         <div class="arama-alani">
             <input type="text" id="aramaKutusu" placeholder="Islem ara...">
         </div>
+        <div class="filtre-alani">
+            <select id="tipFiltresi">
+                <option value="tum">Tum islemler</option>
+                <option value="gelir">Gelirler</option>
+                <option value="gider">Giderler</option>
+            </select>
+            <select id="donemFiltresi">
+                <option value="tum">Tum zamanlar</option>
+                <option value="bu-ay">Bu ay</option>
+                <option value="gecen-ay">Gecen ay</option>
+            </select>
+            <select id="kategoriFiltresi">
+                <option value="tum">Tum kategoriler</option>
+            </select>
+        </div>
         <h2>Yeni Finansal Islem Kaydi</h2>
         <form id="finansForm">
             <input type="text" id="aciklama" placeholder="Islem Aciklamasi" required>
@@ -44,6 +59,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=active-user-edit-1"></script>
+    <script src="script.js?v=filters-1"></script>
 </body>
 </html>
