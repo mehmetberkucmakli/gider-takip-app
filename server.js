@@ -15,7 +15,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Middleware Yapılandırması
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 // 2. Tüm Finansal Hareketleri Getirme Rotası (GET Request)
 app.get('/api/giderler', async (req, res) => {
