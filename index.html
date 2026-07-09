@@ -3,43 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yazılım ve Bilişim Şirketi - Finans Paneli</title>
+    <title>Yazilim ve Bilisim Sirketi - Finans Paneli</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="auth-container" style="text-align: center; margin-top: 50px;">
-        <h2>Ertisya Finans Giriş</h2>
-        <input type="email" id="email" placeholder="E-posta"><br>
-        <input type="password" id="sifre" placeholder="Şifre"><br>
-        <button onclick="girisYap()">Giriş Yap</button>
+    <div id="auth-container" class="auth-card">
+        <h2 id="auth-title">Ertisya Finans Giris</h2>
+        <input type="email" id="email" placeholder="E-posta">
+        <input type="password" id="sifre" placeholder="Sifre">
+        <input type="password" id="sifreTekrar" placeholder="Sifre tekrar" style="display: none;">
+        <input type="text" id="davetKodu" placeholder="Davet kodu" style="display: none;">
+        <button id="auth-submit" type="button" onclick="girisYap()">Giris Yap</button>
+        <button id="auth-toggle" class="link-button" type="button" onclick="authModunuDegistir()">Kayit ol</button>
     </div>
 
     <div id="app-container" style="display: none;" class="container">
-        <h1>Yazılım ve Bilişim Şirketi</h1>
-        <div class="kasa-özet">
-            <div class="ozet-kutu">Şirket Kasa Bakiyesi: <span id="toplamBakiye">0 TL</span></div>
+        <h1>Yazilim ve Bilisim Sirketi</h1>
+        <div class="kasa-ozet">
+            <div class="ozet-kutu">Sirket Kasa Bakiyesi: <span id="toplamBakiye">0 TL</span></div>
         </div>
         <div class="arama-alani">
-            <input type="text" id="aramaKutusu" placeholder="İşlem ara...">
+            <input type="text" id="aramaKutusu" placeholder="Islem ara...">
         </div>
-        <h2>Yeni Finansal İşlem Kaydı</h2>
+        <h2>Yeni Finansal Islem Kaydi</h2>
         <form id="finansForm">
-            <input type="text" id="aciklama" placeholder="İşlem Açıklaması" required>
+            <input type="text" id="aciklama" placeholder="Islem Aciklamasi" required>
             <input type="number" id="miktar" placeholder="Tutar (TL)" required>
             <select id="kategori" required>
-                <option value="" disabled selected>Kategori Seçin</option>
+                <option value="" disabled selected>Kategori Secin</option>
                 <option value="Gelir">Gelir</option>
                 <option value="Gider">Gider</option>
             </select>
-            <button type="submit">Sisteme İşle</button>
+            <button type="submit">Sisteme Isle</button>
         </form>
-        <h2>Finansal Hareket Geçmişi</h2>
+        <h2>Finansal Hareket Gecmisi</h2>
         <ul id="islemListesi"></ul>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=0c09443"></script>
+    <script src="script.js?v=invite-register-1"></script>
 </body>
 </html>

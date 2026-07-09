@@ -1,9 +1,12 @@
 const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
 const supabaseKey = 'sb_publishable_aa2L1It-Ee8Bu1wd783kMw_lprHEpMk';
+const davetKodu = 'ERTISYA2026';
+const registerApiUrl = '';
 
 const sb = supabase.createClient(supabaseUrl, supabaseKey);
 
 let tumIslemler = [];
+let authModu = 'giris';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const { data } = await sb.auth.getSession();
@@ -25,6 +28,11 @@ async function girisYap() {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('sifre').value;
 
+    if (authModu === 'kayit') {
+        await kayitOl();
+        return;
+    }
+
     if (!email || !password) {
         alert('Lutfen e-posta ve sifre girin.');
         return;
@@ -42,6 +50,84 @@ async function girisYap() {
 
     uygulamayiGoster();
     await giderleriYukle();
+}
+
+async function kayitOl() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('sifre').value;
+    const passwordAgain = document.getElementById('sifreTekrar').value;
+    const inviteCode = document.getElementById('davetKodu').value.trim();
+
+    if (!email || !password || !passwordAgain || !inviteCode) {
+        alert('Lutfen tum kayit alanlarini doldurun.');
+        return;
+    }
+
+    if (password.length < 6) {
+        alert('Sifre en az 6 karakter olmali.');
+        return;
+    }
+
+    if (password !== passwordAgain) {
+        alert('Sifreler ayni degil.');
+        return;
+    }
+
+    if (registerApiUrl) {
+        await backendUzerindenKayitOl(email, password, inviteCode);
+        return;
+    }
+
+    if (inviteCode !== davetKodu) {
+        alert('Davet kodu hatali.');
+        return;
+    }
+
+    const { error } = await sb.auth.signUp({ email, password });
+
+    if (error) {
+        alert('Kayit basarisiz: ' + error.message);
+        return;
+    }
+
+    alert('Kayit olusturuldu. E-posta onayi aciksa, gelen kutusundan onay verdikten sonra giris yapabilirsin.');
+    authModunuAyarla('giris');
+}
+
+async function backendUzerindenKayitOl(email, password, inviteCode) {
+    try {
+        const response = await fetch(registerApiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, inviteCode })
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Kayit tamamlanamadi.');
+        }
+
+        alert('Kayit olusturuldu. Simdi giris yapabilirsin.');
+        authModunuAyarla('giris');
+    } catch (error) {
+        alert('Kayit basarisiz: ' + error.message);
+    }
+}
+
+function authModunuDegistir() {
+    authModunuAyarla(authModu === 'giris' ? 'kayit' : 'giris');
+}
+
+function authModunuAyarla(yeniMod) {
+    authModu = yeniMod;
+
+    const kayitModu = authModu === 'kayit';
+    document.getElementById('auth-title').textContent = kayitModu ? 'Ertisya Finans Kayit' : 'Ertisya Finans Giris';
+    document.getElementById('auth-submit').textContent = kayitModu ? 'Kayit Ol' : 'Giris Yap';
+    document.getElementById('auth-toggle').textContent = kayitModu ? 'Giris ekranina don' : 'Kayit ol';
+    document.getElementById('sifreTekrar').style.display = kayitModu ? 'block' : 'none';
+    document.getElementById('davetKodu').style.display = kayitModu ? 'block' : 'none';
 }
 
 async function cikisYap() {
