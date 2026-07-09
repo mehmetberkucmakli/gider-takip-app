@@ -37,20 +37,10 @@ app.get('/api/giderler', async (req, res) => {
 
 // 3. Yeni Finansal İşlem Ekleme Rotası (POST Request)
 app.post('/api/giderler', async (req, res) => {
-    const { aciklama, miktar, kategori } = req.body;
+    const { aciklama, miktar, kategori, islemTipi = 'gider' } = req.body;
 
     if (!aciklama || !miktar || !kategori) {
         return res.status(400).send('Lütfen tüm alanları doldurun.');
-    }
-
-    // Akıllı Kategori Algoritması (Gelir mi Gider mi?)
-    let islemTipi = 'gider';
-    if (
-        kategori === 'Proje/Yazılım Satışı' ||
-        kategori === 'SaaS/Lisans Aboneliği' ||
-        kategori === 'Bakım & Destek Sözleşmesi'
-    ) {
-        islemTipi = 'gelir';
     }
 
     try {

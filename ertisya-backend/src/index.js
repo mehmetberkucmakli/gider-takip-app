@@ -91,20 +91,10 @@ export default {
     if (url.pathname === '/api/giderler' && request.method === 'POST') {
       try {
         const body = await request.json();
-        const { aciklama, miktar, kategori } = body;
+        const { aciklama, miktar, kategori, islemTipi = 'gider' } = body;
 
         if (!aciklama || !miktar || !kategori) {
           return new Response('Lütfen tüm alanları doldurun.', { status: 400, headers: corsHeaders });
-        }
-
-        // Akıllı Gelir/Gider Algoritmamız
-        let islemTipi = 'gider';
-        if (
-          kategori === 'Proje/Yazılım Satışı' ||
-          kategori === 'SaaS/Lisans Aboneliği' ||
-          kategori === 'Bakım & Destek Sözleşmesi'
-        ) {
-          islemTipi = 'gelir';
         }
 
         const { data, error } = await supabase

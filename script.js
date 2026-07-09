@@ -2,6 +2,8 @@ const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
 const supabaseKey = 'sb_publishable_aa2L1It-Ee8Bu1wd783kMw_lprHEpMk';
 const davetKodu = 'ERTISYA2026';
 const registerApiUrl = '';
+const gelirKategorileri = ['Maas', 'Satis', 'Hizmet Geliri', 'Kira Geliri', 'Yatirim', 'Diger Gelir'];
+const giderKategorileri = ['Kira', 'Fatura', 'Market', 'Ulasim', 'Yemek', 'Saglik', 'Egitim', 'Vergi', 'Personel', 'Malzeme', 'Abonelik', 'Diger Gider'];
 
 const sb = supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -28,6 +30,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('tipFiltresi')?.addEventListener('change', () => islemleriListele());
     document.getElementById('donemFiltresi')?.addEventListener('change', () => islemleriListele());
     document.getElementById('kategoriFiltresi')?.addEventListener('change', () => islemleriListele());
+    document.getElementById('islemTipi')?.addEventListener('change', kategoriSecenekleriniGuncelle);
+    kategoriSecenekleriniGuncelle();
 });
 
 async function girisYap() {
@@ -213,8 +217,8 @@ async function islemKaydet(event) {
 
     const aciklama = document.getElementById('aciklama').value.trim();
     const miktar = Number(document.getElementById('miktar').value);
+    const islemTipi = document.getElementById('islemTipi').value;
     const kategori = document.getElementById('kategori').value;
-    const islemTipi = kategori === 'Gelir' ? 'gelir' : 'gider';
     const payload = {
         aciklama,
         miktar,
@@ -256,7 +260,9 @@ function islemDuzenle(id) {
     duzenlenenIslemId = id;
     document.getElementById('aciklama').value = islem.aciklama || '';
     document.getElementById('miktar').value = islem.miktar || '';
-    document.getElementById('kategori').value = islem.kategori || '';
+    document.getElementById('islemTipi').value = islemTipiBul(islem) ? 'gelir' : 'gider';
+    kategoriSecenekleriniGuncelle();
+    document.getElementById('kategori').value = kategoriAdiniNormalizeEt(islem.kategori, islemTipiBul(islem)) || '';
     document.getElementById('formSubmitBtn').textContent = 'Guncelle';
     document.getElementById('duzenlemeIptalBtn').style.display = 'block';
     document.getElementById('finansForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -269,6 +275,7 @@ function duzenlemeyiIptalEt() {
 function formuSifirla() {
     duzenlenenIslemId = null;
     document.getElementById('finansForm').reset();
+    kategoriSecenekleriniGuncelle();
     document.getElementById('formSubmitBtn').textContent = 'Sisteme Isle';
     document.getElementById('duzenlemeIptalBtn').style.display = 'none';
 }
@@ -320,28 +327,29 @@ function islemleriListele(aramaMetni = '') {
 
     const gosterilecekIslemler = tumIslemler.filter((islem) => {
         const aciklama = String(islem.aciklama || '').toLocaleLowerCase('tr-TR');
-        const kategori = String(islem.kategori || '').toLocaleLowerCase('tr-TR');
-        const isGelir = islem.islemTipi === 'gelir' || islem.kategori === 'Gelir';
+        const isGelir = islemTipiBul(islem);
+        const kategori = kategoriAdiniNormalizeEt(islem.kategori, isGelir).toLocaleLowerCase('tr-TR');
         const metinUyuyor = aciklama.includes(filtre) || kategori.includes(filtre);
         const tipUyuyor =
             tipFiltresi === 'tum' ||
             (tipFiltresi === 'gelir' && isGelir) ||
             (tipFiltresi === 'gider' && !isGelir);
-        const kategoriUyuyor = kategoriFiltresi === 'tum' || islem.kategori === kategoriFiltresi;
+        const kategoriUyuyor = kategoriFiltresi === 'tum' || kategoriAdiniNormalizeEt(islem.kategori, isGelir) === kategoriFiltresi;
         const donemUyuyor = islemDonemeUyuyor(islem, donemFiltresi);
 
         return metinUyuyor && tipUyuyor && kategoriUyuyor && donemUyuyor;
     });
 
     gosterilecekIslemler.forEach((islem) => {
-        const isGelir = islem.islemTipi === 'gelir' || islem.kategori === 'Gelir';
+        const isGelir = islemTipiBul(islem);
+        const kategori = kategoriAdiniNormalizeEt(islem.kategori, isGelir);
         const li = document.createElement('li');
         li.className = isGelir ? 'gelir-satiri' : 'gider-satiri';
 
         li.innerHTML = `
             <span>
                 <strong>${islem.aciklama}</strong><br>
-                ${islem.kategori} - ${Number(islem.miktar).toLocaleString('tr-TR')} TL
+                ${kategori} - ${Number(islem.miktar).toLocaleString('tr-TR')} TL
             </span>
             <span class="islem-actions">
                 <button class="duzenle-btn" type="button" onclick="islemDuzenle(${islem.id})">Duzenle</button>
@@ -354,7 +362,7 @@ function islemleriListele(aramaMetni = '') {
 
     const bakiye = gosterilecekIslemler.reduce((toplam, islem) => {
         const miktar = Number(islem.miktar) || 0;
-        const isGelir = islem.islemTipi === 'gelir' || islem.kategori === 'Gelir';
+        const isGelir = islemTipiBul(islem);
         return toplam + (isGelir ? miktar : -miktar);
     }, 0);
 
@@ -368,7 +376,7 @@ function kategoriFiltresiniGuncelle() {
     if (!select) return;
 
     const seciliDeger = select.value;
-    const kategoriler = [...new Set(tumIslemler.map((islem) => islem.kategori).filter(Boolean))].sort((a, b) =>
+    const kategoriler = [...new Set(tumIslemler.map((islem) => kategoriAdiniNormalizeEt(islem.kategori, islemTipiBul(islem))).filter(Boolean))].sort((a, b) =>
         a.localeCompare(b, 'tr')
     );
 
@@ -413,4 +421,45 @@ function tarihMetniniTariheCevir(tarihMetni) {
     if (!gun || !ay || !yil) return null;
 
     return new Date(yil, ay - 1, gun);
+}
+
+function kategoriSecenekleriniGuncelle() {
+    const tipSelect = document.getElementById('islemTipi');
+    const kategoriSelect = document.getElementById('kategori');
+
+    if (!tipSelect || !kategoriSelect) return;
+
+    const seciliKategori = kategoriSelect.value;
+    const kategoriler = tipSelect.value === 'gelir' ? gelirKategorileri : giderKategorileri;
+
+    kategoriSelect.innerHTML = '<option value="" disabled selected>Kategori Secin</option>';
+
+    kategoriler.forEach((kategori) => {
+        const option = document.createElement('option');
+        option.value = kategori;
+        option.textContent = kategori;
+        kategoriSelect.appendChild(option);
+    });
+
+    if (kategoriler.includes(seciliKategori)) {
+        kategoriSelect.value = seciliKategori;
+    }
+}
+
+function islemTipiBul(islem) {
+    if (islem.islemTipi === 'gelir') return true;
+    if (islem.islemTipi === 'gider') return false;
+    return islem.kategori === 'Gelir';
+}
+
+function kategoriAdiniNormalizeEt(kategori, isGelir = false) {
+    if (!kategori) return '';
+    if (kategori === 'Gelir') return 'Diger Gelir';
+    if (kategori === 'Gider') return 'Diger Gider';
+
+    const izinliKategoriler = isGelir ? gelirKategorileri : giderKategorileri;
+
+    if (izinliKategoriler.includes(kategori)) return kategori;
+
+    return isGelir ? 'Diger Gelir' : 'Diger Gider';
 }
