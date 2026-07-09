@@ -123,7 +123,7 @@ function authModunuAyarla(yeniMod) {
     authModu = yeniMod;
 
     const kayitModu = authModu === 'kayit';
-    document.getElementById('auth-title').textContent = kayitModu ? 'Ertisya Finans Kayit' : 'Ertisya Finans Giris';
+    document.getElementById('auth-title').textContent = kayitModu ? 'Davet kodu ile kayit ol' : 'Hesabiniza giris yapin';
     document.getElementById('auth-submit').textContent = kayitModu ? 'Kayit Ol' : 'Giris Yap';
     document.getElementById('auth-toggle').textContent = kayitModu ? 'Giris ekranina don' : 'Kayit ol';
     document.getElementById('sifreTekrar').style.display = kayitModu ? 'block' : 'none';
