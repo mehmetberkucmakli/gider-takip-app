@@ -368,6 +368,41 @@ function islemleriListele(aramaMetni = '') {
 
     toplamBakiye.textContent = `${bakiye.toLocaleString('tr-TR')} TL`;
     toplamBakiye.style.color = bakiye >= 0 ? '#27ae60' : '#e74c3c';
+    raporuGuncelle(gosterilecekIslemler);
+}
+
+function raporuGuncelle(islemler) {
+    const raporGelir = document.getElementById('raporGelir');
+    const raporGider = document.getElementById('raporGider');
+    const raporNet = document.getElementById('raporNet');
+    const raporKategori = document.getElementById('raporKategori');
+
+    if (!raporGelir || !raporGider || !raporNet || !raporKategori) return;
+
+    const ozet = islemler.reduce((sonuc, islem) => {
+        const miktar = Number(islem.miktar) || 0;
+        const isGelir = islemTipiBul(islem);
+        const kategori = kategoriAdiniNormalizeEt(islem.kategori, isGelir);
+
+        if (isGelir) {
+            sonuc.gelir += miktar;
+        } else {
+            sonuc.gider += miktar;
+        }
+
+        sonuc.kategoriler[kategori] = (sonuc.kategoriler[kategori] || 0) + miktar;
+        return sonuc;
+    }, { gelir: 0, gider: 0, kategoriler: {} });
+
+    const net = ozet.gelir - ozet.gider;
+    const oneCikanKategori = Object.entries(ozet.kategoriler)
+        .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+
+    raporGelir.textContent = `${ozet.gelir.toLocaleString('tr-TR')} TL`;
+    raporGider.textContent = `${ozet.gider.toLocaleString('tr-TR')} TL`;
+    raporNet.textContent = `${net.toLocaleString('tr-TR')} TL`;
+    raporNet.style.color = net >= 0 ? '#27ae60' : '#e74c3c';
+    raporKategori.textContent = oneCikanKategori;
 }
 
 function kategoriFiltresiniGuncelle() {

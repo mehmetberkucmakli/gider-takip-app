@@ -304,6 +304,35 @@ h2 {
     text-align: center;
 }
 
+.rapor-ozet {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.rapor-kutu {
+    background: #f8f9fa;
+    border: 1px solid #e1e6ea;
+    border-radius: 6px;
+    padding: 12px;
+    min-width: 0;
+}
+
+.rapor-kutu span {
+    display: block;
+    color: #6b7a89;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.rapor-kutu strong {
+    display: block;
+    color: #1a252f;
+    font-size: 16px;
+    overflow-wrap: anywhere;
+}
+
 .user-badge {
     color: #52616f;
     font-size: 13px;
@@ -314,6 +343,10 @@ h2 {
 @media (max-width: 600px) {
     .islem-actions {
         width: 100%;
+    }
+
+    .rapor-ozet {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .duzenle-btn {
