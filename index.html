@@ -35,13 +35,14 @@
                 <option value="Gelir">Gelir</option>
                 <option value="Gider">Gider</option>
             </select>
-            <button type="submit">Sisteme Isle</button>
+            <button id="formSubmitBtn" type="submit">Sisteme Isle</button>
+            <button id="duzenlemeIptalBtn" class="secondary-btn" type="button" onclick="duzenlemeyiIptalEt()" style="display: none;">Vazgec</button>
         </form>
         <h2>Finansal Hareket Gecmisi</h2>
         <ul id="islemListesi"></ul>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=user-scope-1"></script>
+    <script src="script.js?v=edit-transactions-1"></script>
 </body>
 </html>

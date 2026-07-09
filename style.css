@@ -159,6 +159,35 @@ h2 {
     background-color: #c0392b;
 }
 
+.islem-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.duzenle-btn {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+}
+
+.duzenle-btn:hover {
+    background-color: #d68910;
+}
+
+#finansForm .secondary-btn {
+    background-color: #7f8c8d;
+}
+
+#finansForm .secondary-btn:hover {
+    background-color: #707b7c;
+}
+
 /* 7. Mobil Uyumluluk (Responsive Design) Mimarisi */
 /* Ekran genişliği 600px ve altına düştüğünde (Telefonlar) bu kurallar çalışır */
 @media (max-width: 600px) {
@@ -248,4 +277,16 @@ h2 {
     border-radius: 6px;
     margin-bottom: 20px;
     text-align: center;
+}
+
+@media (max-width: 600px) {
+    .islem-actions {
+        width: 100%;
+    }
+
+    .duzenle-btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
 }

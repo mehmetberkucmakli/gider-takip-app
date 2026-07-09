@@ -8,6 +8,7 @@ const sb = supabase.createClient(supabaseUrl, supabaseKey);
 let tumIslemler = [];
 let authModu = 'giris';
 let aktifKullanici = null;
+let duzenlenenIslemId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const { data } = await sb.auth.getSession();
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         girisiGoster();
     }
 
-    document.getElementById('finansForm')?.addEventListener('submit', islemEkle);
+    document.getElementById('finansForm')?.addEventListener('submit', islemKaydet);
     document.getElementById('aramaKutusu')?.addEventListener('input', (event) => {
         islemleriListele(event.target.value);
     });
@@ -186,7 +187,7 @@ async function giderleriYukle() {
     islemleriListele();
 }
 
-async function islemEkle(event) {
+async function islemKaydet(event) {
     event.preventDefault();
 
     const user = await aktifKullaniciyiGetir();
@@ -201,25 +202,62 @@ async function islemEkle(event) {
     const miktar = Number(document.getElementById('miktar').value);
     const kategori = document.getElementById('kategori').value;
     const islemTipi = kategori === 'Gelir' ? 'gelir' : 'gider';
+    const payload = {
+        aciklama,
+        miktar,
+        kategori,
+        islemTipi,
+        user_id: user.id
+    };
 
-    const { error } = await sb.from('islemler').insert([
-        {
-            aciklama,
-            miktar,
-            kategori,
-            islemTipi,
-            user_id: user.id,
-            tarih: new Date().toLocaleDateString('tr-TR')
-        }
-    ]);
+    const { error } = duzenlenenIslemId
+        ? await sb
+            .from('islemler')
+            .update(payload)
+            .eq('id', duzenlenenIslemId)
+            .eq('user_id', user.id)
+        : await sb.from('islemler').insert([
+            {
+                ...payload,
+                tarih: new Date().toLocaleDateString('tr-TR')
+            }
+        ]);
 
     if (error) {
-        alert('Kayit eklenemedi: ' + error.message);
+        alert('Kayit kaydedilemedi: ' + error.message);
         return;
     }
 
-    event.target.reset();
+    formuSifirla();
     await giderleriYukle();
+}
+
+function islemDuzenle(id) {
+    const islem = tumIslemler.find((item) => item.id === id);
+
+    if (!islem) {
+        alert('Duzenlenecek kayit bulunamadi.');
+        return;
+    }
+
+    duzenlenenIslemId = id;
+    document.getElementById('aciklama').value = islem.aciklama || '';
+    document.getElementById('miktar').value = islem.miktar || '';
+    document.getElementById('kategori').value = islem.kategori || '';
+    document.getElementById('formSubmitBtn').textContent = 'Guncelle';
+    document.getElementById('duzenlemeIptalBtn').style.display = 'block';
+    document.getElementById('finansForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function duzenlemeyiIptalEt() {
+    formuSifirla();
+}
+
+function formuSifirla() {
+    duzenlenenIslemId = null;
+    document.getElementById('finansForm').reset();
+    document.getElementById('formSubmitBtn').textContent = 'Sisteme Isle';
+    document.getElementById('duzenlemeIptalBtn').style.display = 'none';
 }
 
 async function islemSil(id) {
@@ -279,7 +317,10 @@ function islemleriListele(aramaMetni = '') {
                 <strong>${islem.aciklama}</strong><br>
                 ${islem.kategori} - ${Number(islem.miktar).toLocaleString('tr-TR')} TL
             </span>
-            <button class="sil-btn" type="button" onclick="islemSil(${islem.id})">Sil</button>
+            <span class="islem-actions">
+                <button class="duzenle-btn" type="button" onclick="islemDuzenle(${islem.id})">Duzenle</button>
+                <button class="sil-btn" type="button" onclick="islemSil(${islem.id})">Sil</button>
+            </span>
         `;
 
         liste.appendChild(li);
