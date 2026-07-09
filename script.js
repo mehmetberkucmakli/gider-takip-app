@@ -7,11 +7,13 @@ const sb = supabase.createClient(supabaseUrl, supabaseKey);
 
 let tumIslemler = [];
 let authModu = 'giris';
+let aktifKullanici = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const { data } = await sb.auth.getSession();
 
     if (data.session) {
+        aktifKullanici = data.session.user;
         uygulamayiGoster();
         await giderleriYukle();
     } else {
@@ -38,7 +40,7 @@ async function girisYap() {
         return;
     }
 
-    const { error } = await sb.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
     if (error) {
         alert(
@@ -48,6 +50,7 @@ async function girisYap() {
         return;
     }
 
+    aktifKullanici = data.user;
     uygulamayiGoster();
     await giderleriYukle();
 }
@@ -132,6 +135,7 @@ function authModunuAyarla(yeniMod) {
 
 async function cikisYap() {
     await sb.auth.signOut();
+    aktifKullanici = null;
     girisiGoster();
 }
 
@@ -160,9 +164,17 @@ function cikisButonuEkle() {
 }
 
 async function giderleriYukle() {
+    const user = await aktifKullaniciyiGetir();
+
+    if (!user) {
+        girisiGoster();
+        return;
+    }
+
     const { data, error } = await sb
         .from('islemler')
         .select('*')
+        .eq('user_id', user.id)
         .order('id', { ascending: true });
 
     if (error) {
@@ -177,6 +189,14 @@ async function giderleriYukle() {
 async function islemEkle(event) {
     event.preventDefault();
 
+    const user = await aktifKullaniciyiGetir();
+
+    if (!user) {
+        alert('Islem eklemek icin tekrar giris yapin.');
+        girisiGoster();
+        return;
+    }
+
     const aciklama = document.getElementById('aciklama').value.trim();
     const miktar = Number(document.getElementById('miktar').value);
     const kategori = document.getElementById('kategori').value;
@@ -188,6 +208,7 @@ async function islemEkle(event) {
             miktar,
             kategori,
             islemTipi,
+            user_id: user.id,
             tarih: new Date().toLocaleDateString('tr-TR')
         }
     ]);
@@ -202,7 +223,19 @@ async function islemEkle(event) {
 }
 
 async function islemSil(id) {
-    const { error } = await sb.from('islemler').delete().eq('id', id);
+    const user = await aktifKullaniciyiGetir();
+
+    if (!user) {
+        alert('Islem silmek icin tekrar giris yapin.');
+        girisiGoster();
+        return;
+    }
+
+    const { error } = await sb
+        .from('islemler')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
 
     if (error) {
         alert('Kayit silinemedi: ' + error.message);
@@ -210,6 +243,17 @@ async function islemSil(id) {
     }
 
     await giderleriYukle();
+}
+
+async function aktifKullaniciyiGetir() {
+    if (aktifKullanici) return aktifKullanici;
+
+    const { data, error } = await sb.auth.getUser();
+
+    if (error || !data.user) return null;
+
+    aktifKullanici = data.user;
+    return aktifKullanici;
 }
 
 function islemleriListele(aramaMetni = '') {
