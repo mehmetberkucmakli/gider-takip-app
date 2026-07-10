@@ -1,6 +1,6 @@
-{
-  "name": "Yazılım ve Bilişim Şirketi",
-  "short_name": "Yazılım Şirketi",
+﻿{
+  "name": "Finans Kontrol Paneli",
+  "short_name": "Finans Paneli",
   "start_url": "/gider-takip-app/",
   "display": "standalone",
   "background_color": "#ffffff",

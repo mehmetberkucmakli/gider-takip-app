@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yazilim ve Bilisim Sirketi - Finans Paneli</title>
+    <title>Finans Kontrol Paneli</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="auth-container" class="auth-card">
-        <h2 id="auth-title">Hesabiniza giris yapin</h2>
+        <h2 id="auth-title">Hesabınıza giriş yapın</h2>
         <input type="email" id="email" placeholder="E-posta">
-        <input type="password" id="sifre" placeholder="Sifre">
-        <input type="password" id="sifreTekrar" placeholder="Sifre tekrar" style="display: none;">
+        <input type="password" id="sifre" placeholder="Şifre">
+        <input type="password" id="sifreTekrar" placeholder="Şifre tekrar" style="display: none;">
         <input type="text" id="davetKodu" placeholder="Davet kodu" style="display: none;">
-        <button id="auth-submit" type="button" onclick="girisYap()">Giris Yap</button>
-        <button id="auth-toggle" class="link-button" type="button" onclick="authModunuDegistir()">Kayit ol</button>
+        <button id="auth-submit" type="button" onclick="girisYap()">Giriş Yap</button>
+        <button id="auth-toggle" class="link-button" type="button" onclick="authModunuDegistir()">Kayıt ol</button>
     </div>
 
     <div id="app-container" style="display: none;" class="container">
         <div id="aktifKullaniciBilgisi" class="user-badge"></div>
         <h1>Finans Kontrol Paneli</h1>
         <div class="kasa-ozet">
-            <div class="ozet-kutu">Sirket Kasa Bakiyesi: <span id="toplamBakiye">0 TL</span></div>
+            <div class="ozet-kutu">Kasa Bakiyesi: <span id="toplamBakiye">0 TL</span></div>
         </div>
         <div class="rapor-ozet">
             <div class="rapor-kutu">
@@ -38,32 +38,32 @@
                 <strong id="raporNet">0 TL</strong>
             </div>
             <div class="rapor-kutu">
-                <span>One cikan kategori</span>
+                <span>Öne çıkan kategori</span>
                 <strong id="raporKategori">-</strong>
             </div>
         </div>
         <div class="arama-alani">
-            <input type="text" id="aramaKutusu" placeholder="Islem ara...">
+            <input type="text" id="aramaKutusu" placeholder="İşlem ara...">
         </div>
         <div class="filtre-alani">
             <select id="tipFiltresi">
-                <option value="tum">Tum islemler</option>
+                <option value="tum">Tüm işlemler</option>
                 <option value="gelir">Gelirler</option>
                 <option value="gider">Giderler</option>
             </select>
             <select id="donemFiltresi">
-                <option value="tum">Tum zamanlar</option>
+                <option value="tum">Tüm zamanlar</option>
                 <option value="bu-ay">Bu ay</option>
-                <option value="gecen-ay">Gecen ay</option>
+                <option value="gecen-ay">Geçen ay</option>
             </select>
             <select id="kategoriFiltresi">
-                <option value="tum">Tum kategoriler</option>
+                <option value="tum">Tüm kategoriler</option>
             </select>
-            <button id="csvExportBtn" type="button" onclick="csvDisariAktar()">CSV Indir</button>
+            <button id="csvExportBtn" type="button" onclick="csvDisariAktar()">CSV İndir</button>
         </div>
-        <h2>Yeni Finansal Islem Kaydi</h2>
+        <h2>Yeni Finansal İşlem Kaydı</h2>
         <form id="finansForm">
-            <input type="text" id="aciklama" placeholder="Islem Aciklamasi" required>
+            <input type="text" id="aciklama" placeholder="İşlem Açıklaması" required>
             <input type="number" id="miktar" placeholder="Tutar (TL)" required>
             <input type="date" id="tarih" required>
             <select id="islemTipi" required>
@@ -71,16 +71,16 @@
                 <option value="gider" selected>Gider</option>
             </select>
             <select id="kategori" required>
-                <option value="" disabled selected>Kategori Secin</option>
+                <option value="" disabled selected>Kategori Seçin</option>
             </select>
-            <button id="formSubmitBtn" type="submit">Sisteme Isle</button>
-            <button id="duzenlemeIptalBtn" class="secondary-btn" type="button" onclick="duzenlemeyiIptalEt()" style="display: none;">Vazgec</button>
+            <button id="formSubmitBtn" type="submit">Sisteme İşle</button>
+            <button id="duzenlemeIptalBtn" class="secondary-btn" type="button" onclick="duzenlemeyiIptalEt()" style="display: none;">Vazgeç</button>
         </form>
-        <h2>Finansal Hareket Gecmisi</h2>
+        <h2>Finansal Hareket Geçmişi</h2>
         <ul id="islemListesi"></ul>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=date-csv-1"></script>
+    <script src="script.js?v=turkish-copy-1"></script>
 </body>
 </html>

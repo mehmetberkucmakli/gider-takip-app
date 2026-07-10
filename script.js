@@ -2,8 +2,18 @@ const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
 const supabaseKey = 'sb_publishable_aa2L1It-Ee8Bu1wd783kMw_lprHEpMk';
 const davetKodu = 'ERTISYA2026';
 const registerApiUrl = '';
-const gelirKategorileri = ['Maas', 'Satis', 'Hizmet Geliri', 'Kira Geliri', 'Yatirim', 'Diger Gelir'];
-const giderKategorileri = ['Kira', 'Fatura', 'Market', 'Ulasim', 'Yemek', 'Saglik', 'Egitim', 'Vergi', 'Personel', 'Malzeme', 'Abonelik', 'Diger Gider'];
+const gelirKategorileri = ['Maaş', 'Satış', 'Hizmet Geliri', 'Kira Geliri', 'Yatırım', 'Diğer Gelir'];
+const giderKategorileri = ['Kira', 'Fatura', 'Market', 'Ulaşım', 'Yemek', 'Sağlık', 'Eğitim', 'Vergi', 'Personel', 'Malzeme', 'Abonelik', 'Diğer Gider'];
+const kategoriTakmaAdlari = {
+    Maas: 'Maaş',
+    Satis: 'Satış',
+    Yatirim: 'Yatırım',
+    Ulasim: 'Ulaşım',
+    Saglik: 'Sağlık',
+    Egitim: 'Eğitim',
+    'Diger Gelir': 'Diğer Gelir',
+    'Diger Gider': 'Diğer Gider'
+};
 
 const sb = supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -46,7 +56,7 @@ async function girisYap() {
     }
 
     if (!email || !password) {
-        alert('Lutfen e-posta ve sifre girin.');
+        alert('Lütfen e-posta ve şifre girin.');
         return;
     }
 
@@ -54,8 +64,8 @@ async function girisYap() {
 
     if (error) {
         alert(
-            'Giris basarisiz: ' + error.message +
-            '\n\nNot: Supabase tablosundaki kayitlarla giris yapilmaz. Kullanici Authentication > Users bolumunde olusturulmus olmali.'
+            'Giriş başarısız: ' + error.message +
+            '\n\nNot: Supabase tablosundaki kayıtlarla giriş yapılmaz. Kullanıcı Authentication > Users bölümünde oluşturulmuş olmalı.'
         );
         return;
     }
@@ -72,17 +82,17 @@ async function kayitOl() {
     const inviteCode = document.getElementById('davetKodu').value.trim();
 
     if (!email || !password || !passwordAgain || !inviteCode) {
-        alert('Lutfen tum kayit alanlarini doldurun.');
+        alert('Lütfen tüm kayıt alanlarını doldurun.');
         return;
     }
 
     if (password.length < 6) {
-        alert('Sifre en az 6 karakter olmali.');
+        alert('Şifre en az 6 karakter olmalı.');
         return;
     }
 
     if (password !== passwordAgain) {
-        alert('Sifreler ayni degil.');
+        alert('Şifreler aynı değil.');
         return;
     }
 
@@ -92,18 +102,18 @@ async function kayitOl() {
     }
 
     if (inviteCode !== davetKodu) {
-        alert('Davet kodu hatali.');
+        alert('Davet kodu hatalı.');
         return;
     }
 
     const { error } = await sb.auth.signUp({ email, password });
 
     if (error) {
-        alert('Kayit basarisiz: ' + error.message);
+        alert('Kayıt başarısız: ' + error.message);
         return;
     }
 
-    alert('Kayit olusturuldu. E-posta onayi aciksa, gelen kutusundan onay verdikten sonra giris yapabilirsin.');
+    alert('Kayıt oluşturuldu. E-posta onayı açıksa, gelen kutusundan onay verdikten sonra giriş yapabilirsin.');
     authModunuAyarla('giris');
 }
 
@@ -118,13 +128,13 @@ async function backendUzerindenKayitOl(email, password, inviteCode) {
         const result = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            throw new Error(result.error || 'Kayit tamamlanamadi.');
+            throw new Error(result.error || 'Kayıt tamamlanamadı.');
         }
 
-        alert('Kayit olusturuldu. Simdi giris yapabilirsin.');
+        alert('Kayıt oluşturuldu. Şimdi giriş yapabilirsin.');
         authModunuAyarla('giris');
     } catch (error) {
-        alert('Kayit basarisiz: ' + error.message);
+        alert('Kayıt başarısız: ' + error.message);
     }
 }
 
@@ -136,9 +146,9 @@ function authModunuAyarla(yeniMod) {
     authModu = yeniMod;
 
     const kayitModu = authModu === 'kayit';
-    document.getElementById('auth-title').textContent = kayitModu ? 'Davet kodu ile kayit ol' : 'Hesabiniza giris yapin';
-    document.getElementById('auth-submit').textContent = kayitModu ? 'Kayit Ol' : 'Giris Yap';
-    document.getElementById('auth-toggle').textContent = kayitModu ? 'Giris ekranina don' : 'Kayit ol';
+    document.getElementById('auth-title').textContent = kayitModu ? 'Davet kodu ile kayıt ol' : 'Hesabınıza giriş yapın';
+    document.getElementById('auth-submit').textContent = kayitModu ? 'Kayıt Ol' : 'Giriş Yap';
+    document.getElementById('auth-toggle').textContent = kayitModu ? 'Giriş ekranına dön' : 'Kayıt ol';
     document.getElementById('sifreTekrar').style.display = kayitModu ? 'block' : 'none';
     document.getElementById('davetKodu').style.display = kayitModu ? 'block' : 'none';
 }
@@ -175,7 +185,7 @@ function cikisButonuEkle() {
     const button = document.createElement('button');
     button.id = 'cikisBtn';
     button.type = 'button';
-    button.textContent = 'Cikis Yap';
+    button.textContent = 'Çıkış Yap';
     button.style.marginBottom = '16px';
     button.onclick = cikisYap;
 
@@ -197,7 +207,7 @@ async function giderleriYukle() {
         .order('id', { ascending: true });
 
     if (error) {
-        alert('Kayitlar yuklenemedi: ' + error.message);
+        alert('Kayıtlar yüklenemedi: ' + error.message);
         return;
     }
 
@@ -212,7 +222,7 @@ async function islemKaydet(event) {
     const user = await aktifKullaniciyiGetir();
 
     if (!user) {
-        alert('Islem eklemek icin tekrar giris yapin.');
+        alert('İşlem eklemek için tekrar giriş yapın.');
         girisiGoster();
         return;
     }
@@ -224,7 +234,7 @@ async function islemKaydet(event) {
     const tarih = tarihInputunuKayitFormatinaCevir(document.getElementById('tarih').value);
 
     if (!tarih) {
-        alert('Lutfen islem tarihini secin.');
+        alert('Lütfen işlem tarihini seçin.');
         return;
     }
 
@@ -246,7 +256,7 @@ async function islemKaydet(event) {
         : await sb.from('islemler').insert([payload]);
 
     if (error) {
-        alert('Kayit kaydedilemedi: ' + error.message);
+        alert('Kayıt kaydedilemedi: ' + error.message);
         return;
     }
 
@@ -258,7 +268,7 @@ function islemDuzenle(id) {
     const islem = tumIslemler.find((item) => item.id === id);
 
     if (!islem) {
-        alert('Duzenlenecek kayit bulunamadi.');
+        alert('Düzenlenecek kayıt bulunamadı.');
         return;
     }
 
@@ -269,7 +279,7 @@ function islemDuzenle(id) {
     document.getElementById('islemTipi').value = islemTipiBul(islem) ? 'gelir' : 'gider';
     kategoriSecenekleriniGuncelle();
     document.getElementById('kategori').value = kategoriAdiniNormalizeEt(islem.kategori, islemTipiBul(islem)) || '';
-    document.getElementById('formSubmitBtn').textContent = 'Guncelle';
+    document.getElementById('formSubmitBtn').textContent = 'Güncelle';
     document.getElementById('duzenlemeIptalBtn').style.display = 'block';
     document.getElementById('finansForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -283,7 +293,7 @@ function formuSifirla() {
     document.getElementById('finansForm').reset();
     kategoriSecenekleriniGuncelle();
     tarihAlaniniBuguneAyarla();
-    document.getElementById('formSubmitBtn').textContent = 'Sisteme Isle';
+    document.getElementById('formSubmitBtn').textContent = 'Sisteme İşle';
     document.getElementById('duzenlemeIptalBtn').style.display = 'none';
 }
 
@@ -291,7 +301,7 @@ async function islemSil(id) {
     const user = await aktifKullaniciyiGetir();
 
     if (!user) {
-        alert('Islem silmek icin tekrar giris yapin.');
+        alert('İşlem silmek için tekrar giriş yapın.');
         girisiGoster();
         return;
     }
@@ -303,7 +313,7 @@ async function islemSil(id) {
         .eq('user_id', user.id);
 
     if (error) {
-        alert('Kayit silinemedi: ' + error.message);
+        alert('Kayıt silinemedi: ' + error.message);
         return;
     }
 
@@ -353,8 +363,8 @@ function islemleriListele(aramaMetni = '') {
         const li = document.createElement('li');
         li.className = 'bos-liste';
         li.textContent = tumIslemler.length === 0
-            ? 'Henuz islem kaydi yok.'
-            : 'Bu filtreye uygun islem bulunamadi.';
+            ? 'Henüz işlem kaydı yok.'
+            : 'Bu filtreye uygun işlem bulunamadı.';
         liste.appendChild(li);
     }
 
@@ -370,7 +380,7 @@ function islemleriListele(aramaMetni = '') {
                 ${islem.tarih || '-'} - ${kategori} - ${Number(islem.miktar).toLocaleString('tr-TR')} TL
             </span>
             <span class="islem-actions">
-                <button class="duzenle-btn" type="button" onclick="islemDuzenle(${islem.id})">Duzenle</button>
+                <button class="duzenle-btn" type="button" onclick="islemDuzenle(${islem.id})">Düzenle</button>
                 <button class="sil-btn" type="button" onclick="islemSil(${islem.id})">Sil</button>
             </span>
         `;
@@ -393,11 +403,11 @@ function csvDisariAktar() {
     const aktarilacakIslemler = Array.isArray(filtrelenenIslemler) ? filtrelenenIslemler : tumIslemler;
 
     if (aktarilacakIslemler.length === 0) {
-        alert('Aktarilacak islem bulunamadi.');
+        alert('Aktarılacak işlem bulunamadı.');
         return;
     }
 
-    const basliklar = ['Tarih', 'Tip', 'Kategori', 'Aciklama', 'Miktar'];
+    const basliklar = ['Tarih', 'Tip', 'Kategori', 'Açıklama', 'Miktar'];
     const satirlar = aktarilacakIslemler.map((islem) => {
         const isGelir = islemTipiBul(islem);
 
@@ -472,7 +482,7 @@ function kategoriFiltresiniGuncelle() {
         a.localeCompare(b, 'tr')
     );
 
-    select.innerHTML = '<option value="tum">Tum kategoriler</option>';
+    select.innerHTML = '<option value="tum">Tüm kategoriler</option>';
 
     kategoriler.forEach((kategori) => {
         const option = document.createElement('option');
@@ -562,7 +572,7 @@ function kategoriSecenekleriniGuncelle() {
     const seciliKategori = kategoriSelect.value;
     const kategoriler = tipSelect.value === 'gelir' ? gelirKategorileri : giderKategorileri;
 
-    kategoriSelect.innerHTML = '<option value="" disabled selected>Kategori Secin</option>';
+    kategoriSelect.innerHTML = '<option value="" disabled selected>Kategori Seçin</option>';
 
     kategoriler.forEach((kategori) => {
         const option = document.createElement('option');
@@ -584,12 +594,14 @@ function islemTipiBul(islem) {
 
 function kategoriAdiniNormalizeEt(kategori, isGelir = false) {
     if (!kategori) return '';
-    if (kategori === 'Gelir') return 'Diger Gelir';
-    if (kategori === 'Gider') return 'Diger Gider';
+    if (kategori === 'Gelir') return 'Diğer Gelir';
+    if (kategori === 'Gider') return 'Diğer Gider';
+
+    const temizKategori = kategoriTakmaAdlari[kategori] || kategori;
 
     const izinliKategoriler = isGelir ? gelirKategorileri : giderKategorileri;
 
-    if (izinliKategoriler.includes(kategori)) return kategori;
+    if (izinliKategoriler.includes(temizKategori)) return temizKategori;
 
-    return isGelir ? 'Diger Gelir' : 'Diger Gider';
+    return isGelir ? 'Diğer Gelir' : 'Diğer Gider';
 }
