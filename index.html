@@ -59,11 +59,13 @@
             <select id="kategoriFiltresi">
                 <option value="tum">Tum kategoriler</option>
             </select>
+            <button id="csvExportBtn" type="button" onclick="csvDisariAktar()">CSV Indir</button>
         </div>
         <h2>Yeni Finansal Islem Kaydi</h2>
         <form id="finansForm">
             <input type="text" id="aciklama" placeholder="Islem Aciklamasi" required>
             <input type="number" id="miktar" placeholder="Tutar (TL)" required>
+            <input type="date" id="tarih" required>
             <select id="islemTipi" required>
                 <option value="gelir">Gelir</option>
                 <option value="gider" selected>Gider</option>
@@ -79,6 +81,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=report-summary-1"></script>
+    <script src="script.js?v=date-csv-1"></script>
 </body>
 </html>

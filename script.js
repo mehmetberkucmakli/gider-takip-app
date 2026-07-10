@@ -8,6 +8,7 @@ const giderKategorileri = ['Kira', 'Fatura', 'Market', 'Ulasim', 'Yemek', 'Sagli
 const sb = supabase.createClient(supabaseUrl, supabaseKey);
 
 let tumIslemler = [];
+let filtrelenenIslemler = null;
 let authModu = 'giris';
 let aktifKullanici = null;
 let duzenlenenIslemId = null;
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('kategoriFiltresi')?.addEventListener('change', () => islemleriListele());
     document.getElementById('islemTipi')?.addEventListener('change', kategoriSecenekleriniGuncelle);
     kategoriSecenekleriniGuncelle();
+    tarihAlaniniBuguneAyarla();
 });
 
 async function girisYap() {
@@ -219,11 +221,19 @@ async function islemKaydet(event) {
     const miktar = Number(document.getElementById('miktar').value);
     const islemTipi = document.getElementById('islemTipi').value;
     const kategori = document.getElementById('kategori').value;
+    const tarih = tarihInputunuKayitFormatinaCevir(document.getElementById('tarih').value);
+
+    if (!tarih) {
+        alert('Lutfen islem tarihini secin.');
+        return;
+    }
+
     const payload = {
         aciklama,
         miktar,
         kategori,
         islemTipi,
+        tarih,
         user_id: user.id
     };
 
@@ -233,12 +243,7 @@ async function islemKaydet(event) {
             .update(payload)
             .eq('id', duzenlenenIslemId)
             .eq('user_id', user.id)
-        : await sb.from('islemler').insert([
-            {
-                ...payload,
-                tarih: new Date().toLocaleDateString('tr-TR')
-            }
-        ]);
+        : await sb.from('islemler').insert([payload]);
 
     if (error) {
         alert('Kayit kaydedilemedi: ' + error.message);
@@ -260,6 +265,7 @@ function islemDuzenle(id) {
     duzenlenenIslemId = id;
     document.getElementById('aciklama').value = islem.aciklama || '';
     document.getElementById('miktar').value = islem.miktar || '';
+    document.getElementById('tarih').value = tarihMetniniInputFormatinaCevir(islem.tarih) || bugununInputTarihi();
     document.getElementById('islemTipi').value = islemTipiBul(islem) ? 'gelir' : 'gider';
     kategoriSecenekleriniGuncelle();
     document.getElementById('kategori').value = kategoriAdiniNormalizeEt(islem.kategori, islemTipiBul(islem)) || '';
@@ -276,6 +282,7 @@ function formuSifirla() {
     duzenlenenIslemId = null;
     document.getElementById('finansForm').reset();
     kategoriSecenekleriniGuncelle();
+    tarihAlaniniBuguneAyarla();
     document.getElementById('formSubmitBtn').textContent = 'Sisteme Isle';
     document.getElementById('duzenlemeIptalBtn').style.display = 'none';
 }
@@ -340,6 +347,17 @@ function islemleriListele(aramaMetni = '') {
         return metinUyuyor && tipUyuyor && kategoriUyuyor && donemUyuyor;
     });
 
+    filtrelenenIslemler = gosterilecekIslemler;
+
+    if (gosterilecekIslemler.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'bos-liste';
+        li.textContent = tumIslemler.length === 0
+            ? 'Henuz islem kaydi yok.'
+            : 'Bu filtreye uygun islem bulunamadi.';
+        liste.appendChild(li);
+    }
+
     gosterilecekIslemler.forEach((islem) => {
         const isGelir = islemTipiBul(islem);
         const kategori = kategoriAdiniNormalizeEt(islem.kategori, isGelir);
@@ -349,7 +367,7 @@ function islemleriListele(aramaMetni = '') {
         li.innerHTML = `
             <span>
                 <strong>${islem.aciklama}</strong><br>
-                ${kategori} - ${Number(islem.miktar).toLocaleString('tr-TR')} TL
+                ${islem.tarih || '-'} - ${kategori} - ${Number(islem.miktar).toLocaleString('tr-TR')} TL
             </span>
             <span class="islem-actions">
                 <button class="duzenle-btn" type="button" onclick="islemDuzenle(${islem.id})">Duzenle</button>
@@ -369,6 +387,45 @@ function islemleriListele(aramaMetni = '') {
     toplamBakiye.textContent = `${bakiye.toLocaleString('tr-TR')} TL`;
     toplamBakiye.style.color = bakiye >= 0 ? '#27ae60' : '#e74c3c';
     raporuGuncelle(gosterilecekIslemler);
+}
+
+function csvDisariAktar() {
+    const aktarilacakIslemler = Array.isArray(filtrelenenIslemler) ? filtrelenenIslemler : tumIslemler;
+
+    if (aktarilacakIslemler.length === 0) {
+        alert('Aktarilacak islem bulunamadi.');
+        return;
+    }
+
+    const basliklar = ['Tarih', 'Tip', 'Kategori', 'Aciklama', 'Miktar'];
+    const satirlar = aktarilacakIslemler.map((islem) => {
+        const isGelir = islemTipiBul(islem);
+
+        return [
+            islem.tarih || '',
+            isGelir ? 'Gelir' : 'Gider',
+            kategoriAdiniNormalizeEt(islem.kategori, isGelir),
+            islem.aciklama || '',
+            Number(islem.miktar) || 0
+        ];
+    });
+
+    const csv = [basliklar, ...satirlar]
+        .map((satir) => satir.map(csvHucreHazirla).join(';'))
+        .join('\n');
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = `finans-islemleri-${bugununInputTarihi()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function csvHucreHazirla(deger) {
+    const metin = String(deger).replaceAll('"', '""');
+    return `"${metin}"`;
 }
 
 function raporuGuncelle(islemler) {
@@ -456,6 +513,44 @@ function tarihMetniniTariheCevir(tarihMetni) {
     if (!gun || !ay || !yil) return null;
 
     return new Date(yil, ay - 1, gun);
+}
+
+function tarihInputunuKayitFormatinaCevir(inputTarihi) {
+    if (!inputTarihi) return '';
+
+    const [yil, ay, gun] = inputTarihi.split('-');
+
+    if (!gun || !ay || !yil) return '';
+
+    return `${gun}.${ay}.${yil}`;
+}
+
+function tarihMetniniInputFormatinaCevir(tarihMetni) {
+    const tarih = tarihMetniniTariheCevir(tarihMetni);
+
+    if (!tarih) return '';
+
+    return tarihiInputFormatinaCevir(tarih);
+}
+
+function tarihAlaniniBuguneAyarla() {
+    const tarihInput = document.getElementById('tarih');
+
+    if (tarihInput) {
+        tarihInput.value = bugununInputTarihi();
+    }
+}
+
+function bugununInputTarihi() {
+    return tarihiInputFormatinaCevir(new Date());
+}
+
+function tarihiInputFormatinaCevir(tarih) {
+    const yil = tarih.getFullYear();
+    const ay = String(tarih.getMonth() + 1).padStart(2, '0');
+    const gun = String(tarih.getDate()).padStart(2, '0');
+
+    return `${yil}-${ay}-${gun}`;
 }
 
 function kategoriSecenekleriniGuncelle() {
