@@ -42,16 +42,6 @@ h2 {
     padding-bottom: 6px;
 }
 
-/* 3. Kasa Özet Paneli Tasarımı */
-.kasa-özet {
-    background: #ebf5fb;
-    border-left: 5px solid #3498db;
-    padding: 15px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
 .ozet-kutu {
     font-size: 20px;
     font-weight: bold;

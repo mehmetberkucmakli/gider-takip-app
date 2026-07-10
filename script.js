@@ -1,7 +1,7 @@
-const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
+﻿const supabaseUrl = 'https://mjmmfyuymrzsdeymnfvs.supabase.co';
 const supabaseKey = 'sb_publishable_aa2L1It-Ee8Bu1wd783kMw_lprHEpMk';
 const davetKodu = 'ERTISYA2026';
-const registerApiUrl = '';
+
 const gelirKategorileri = ['Maaş', 'Satış', 'Hizmet Geliri', 'Kira Geliri', 'Yatırım', 'Diğer Gelir'];
 const giderKategorileri = ['Kira', 'Fatura', 'Market', 'Ulaşım', 'Yemek', 'Sağlık', 'Eğitim', 'Vergi', 'Personel', 'Malzeme', 'Abonelik', 'Diğer Gider'];
 const kategoriTakmaAdlari = {
@@ -16,9 +16,10 @@ const kategoriTakmaAdlari = {
 };
 
 const sb = supabase.createClient(supabaseUrl, supabaseKey);
+const $ = (id) => document.getElementById(id);
 
 let tumIslemler = [];
-let filtrelenenIslemler = null;
+let filtrelenenIslemler = [];
 let authModu = 'giris';
 let aktifKullanici = null;
 let duzenlenenIslemId = null;
@@ -29,31 +30,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (data.session) {
         aktifKullanici = data.session.user;
         uygulamayiGoster();
-        await giderleriYukle();
+        await islemleriYukle();
     } else {
         girisiGoster();
     }
 
-    document.getElementById('finansForm')?.addEventListener('submit', islemKaydet);
-    document.getElementById('aramaKutusu')?.addEventListener('input', (event) => {
-        islemleriListele(event.target.value);
+    // Sayfa açılınca form ve filtre olayları bağlanır.
+    $('finansForm')?.addEventListener('submit', islemKaydet);
+    $('aramaKutusu')?.addEventListener('input', islemleriListele);
+    ['tipFiltresi', 'donemFiltresi', 'kategoriFiltresi'].forEach((id) => {
+        $(id)?.addEventListener('change', islemleriListele);
     });
-    document.getElementById('tipFiltresi')?.addEventListener('change', () => islemleriListele());
-    document.getElementById('donemFiltresi')?.addEventListener('change', () => islemleriListele());
-    document.getElementById('kategoriFiltresi')?.addEventListener('change', () => islemleriListele());
-    document.getElementById('islemTipi')?.addEventListener('change', kategoriSecenekleriniGuncelle);
+    $('islemTipi')?.addEventListener('change', kategoriSecenekleriniGuncelle);
+
     kategoriSecenekleriniGuncelle();
     tarihAlaniniBuguneAyarla();
 });
 
 async function girisYap() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('sifre').value;
-
     if (authModu === 'kayit') {
         await kayitOl();
         return;
     }
+
+    const email = $('email').value.trim();
+    const password = $('sifre').value;
 
     if (!email || !password) {
         alert('Lütfen e-posta ve şifre girin.');
@@ -72,14 +73,14 @@ async function girisYap() {
 
     aktifKullanici = data.user;
     uygulamayiGoster();
-    await giderleriYukle();
+    await islemleriYukle();
 }
 
 async function kayitOl() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('sifre').value;
-    const passwordAgain = document.getElementById('sifreTekrar').value;
-    const inviteCode = document.getElementById('davetKodu').value.trim();
+    const email = $('email').value.trim();
+    const password = $('sifre').value;
+    const passwordAgain = $('sifreTekrar').value;
+    const inviteCode = $('davetKodu').value.trim();
 
     if (!email || !password || !passwordAgain || !inviteCode) {
         alert('Lütfen tüm kayıt alanlarını doldurun.');
@@ -93,11 +94,6 @@ async function kayitOl() {
 
     if (password !== passwordAgain) {
         alert('Şifreler aynı değil.');
-        return;
-    }
-
-    if (registerApiUrl) {
-        await backendUzerindenKayitOl(email, password, inviteCode);
         return;
     }
 
@@ -117,27 +113,6 @@ async function kayitOl() {
     authModunuAyarla('giris');
 }
 
-async function backendUzerindenKayitOl(email, password, inviteCode) {
-    try {
-        const response = await fetch(registerApiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, inviteCode })
-        });
-
-        const result = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-            throw new Error(result.error || 'Kayıt tamamlanamadı.');
-        }
-
-        alert('Kayıt oluşturuldu. Şimdi giriş yapabilirsin.');
-        authModunuAyarla('giris');
-    } catch (error) {
-        alert('Kayıt başarısız: ' + error.message);
-    }
-}
-
 function authModunuDegistir() {
     authModunuAyarla(authModu === 'giris' ? 'kayit' : 'giris');
 }
@@ -146,11 +121,11 @@ function authModunuAyarla(yeniMod) {
     authModu = yeniMod;
 
     const kayitModu = authModu === 'kayit';
-    document.getElementById('auth-title').textContent = kayitModu ? 'Davet kodu ile kayıt ol' : 'Hesabınıza giriş yapın';
-    document.getElementById('auth-submit').textContent = kayitModu ? 'Kayıt Ol' : 'Giriş Yap';
-    document.getElementById('auth-toggle').textContent = kayitModu ? 'Giriş ekranına dön' : 'Kayıt ol';
-    document.getElementById('sifreTekrar').style.display = kayitModu ? 'block' : 'none';
-    document.getElementById('davetKodu').style.display = kayitModu ? 'block' : 'none';
+    $('auth-title').textContent = kayitModu ? 'Davet kodu ile kayıt ol' : 'Hesabınıza giriş yapın';
+    $('auth-submit').textContent = kayitModu ? 'Kayıt Ol' : 'Giriş Yap';
+    $('auth-toggle').textContent = kayitModu ? 'Giriş ekranına dön' : 'Kayıt ol';
+    $('sifreTekrar').style.display = kayitModu ? 'block' : 'none';
+    $('davetKodu').style.display = kayitModu ? 'block' : 'none';
 }
 
 async function cikisYap() {
@@ -160,27 +135,19 @@ async function cikisYap() {
 }
 
 function girisiGoster() {
-    document.getElementById('auth-container').style.display = 'block';
-    document.getElementById('app-container').style.display = 'none';
+    $('auth-container').style.display = 'block';
+    $('app-container').style.display = 'none';
 }
 
 function uygulamayiGoster() {
-    document.getElementById('auth-container').style.display = 'none';
-    document.getElementById('app-container').style.display = 'block';
-    aktifKullaniciBilgisiniGoster();
+    $('auth-container').style.display = 'none';
+    $('app-container').style.display = 'block';
+    $('aktifKullaniciBilgisi').textContent = `Aktif hesap: ${aktifKullanici.email}`;
     cikisButonuEkle();
 }
 
-function aktifKullaniciBilgisiniGoster() {
-    const element = document.getElementById('aktifKullaniciBilgisi');
-
-    if (!element || !aktifKullanici) return;
-
-    element.textContent = `Aktif hesap: ${aktifKullanici.email}`;
-}
-
 function cikisButonuEkle() {
-    if (document.getElementById('cikisBtn')) return;
+    if ($('cikisBtn')) return;
 
     const button = document.createElement('button');
     button.id = 'cikisBtn';
@@ -189,10 +156,18 @@ function cikisButonuEkle() {
     button.style.marginBottom = '16px';
     button.onclick = cikisYap;
 
-    document.getElementById('app-container').prepend(button);
+    $('app-container').prepend(button);
 }
 
-async function giderleriYukle() {
+async function aktifKullaniciyiGetir() {
+    if (aktifKullanici) return aktifKullanici;
+
+    const { data, error } = await sb.auth.getUser();
+    aktifKullanici = error ? null : data.user;
+    return aktifKullanici;
+}
+
+async function islemleriYukle() {
     const user = await aktifKullaniciyiGetir();
 
     if (!user) {
@@ -227,33 +202,15 @@ async function islemKaydet(event) {
         return;
     }
 
-    const aciklama = document.getElementById('aciklama').value.trim();
-    const miktar = Number(document.getElementById('miktar').value);
-    const islemTipi = document.getElementById('islemTipi').value;
-    const kategori = document.getElementById('kategori').value;
-    const tarih = tarihInputunuKayitFormatinaCevir(document.getElementById('tarih').value);
+    const payload = formVerisiniOku(user.id);
 
-    if (!tarih) {
-        alert('Lütfen işlem tarihini seçin.');
-        return;
-    }
+    if (!payload) return;
 
-    const payload = {
-        aciklama,
-        miktar,
-        kategori,
-        islemTipi,
-        tarih,
-        user_id: user.id
-    };
+    const sorgu = duzenlenenIslemId
+        ? sb.from('islemler').update(payload).eq('id', duzenlenenIslemId).eq('user_id', user.id)
+        : sb.from('islemler').insert([payload]);
 
-    const { error } = duzenlenenIslemId
-        ? await sb
-            .from('islemler')
-            .update(payload)
-            .eq('id', duzenlenenIslemId)
-            .eq('user_id', user.id)
-        : await sb.from('islemler').insert([payload]);
+    const { error } = await sorgu;
 
     if (error) {
         alert('Kayıt kaydedilemedi: ' + error.message);
@@ -261,7 +218,25 @@ async function islemKaydet(event) {
     }
 
     formuSifirla();
-    await giderleriYukle();
+    await islemleriYukle();
+}
+
+function formVerisiniOku(userId) {
+    const tarih = tarihInputunuKayitFormatinaCevir($('tarih').value);
+
+    if (!tarih) {
+        alert('Lütfen işlem tarihini seçin.');
+        return null;
+    }
+
+    return {
+        aciklama: $('aciklama').value.trim(),
+        miktar: Number($('miktar').value),
+        kategori: $('kategori').value,
+        islemTipi: $('islemTipi').value,
+        tarih,
+        user_id: userId
+    };
 }
 
 function islemDuzenle(id) {
@@ -273,15 +248,15 @@ function islemDuzenle(id) {
     }
 
     duzenlenenIslemId = id;
-    document.getElementById('aciklama').value = islem.aciklama || '';
-    document.getElementById('miktar').value = islem.miktar || '';
-    document.getElementById('tarih').value = tarihMetniniInputFormatinaCevir(islem.tarih) || bugununInputTarihi();
-    document.getElementById('islemTipi').value = islemTipiBul(islem) ? 'gelir' : 'gider';
+    $('aciklama').value = islem.aciklama || '';
+    $('miktar').value = islem.miktar || '';
+    $('tarih').value = tarihMetniniInputFormatinaCevir(islem.tarih) || bugununInputTarihi();
+    $('islemTipi').value = islemTipiBul(islem) ? 'gelir' : 'gider';
     kategoriSecenekleriniGuncelle();
-    document.getElementById('kategori').value = kategoriAdiniNormalizeEt(islem.kategori, islemTipiBul(islem)) || '';
-    document.getElementById('formSubmitBtn').textContent = 'Güncelle';
-    document.getElementById('duzenlemeIptalBtn').style.display = 'block';
-    document.getElementById('finansForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('kategori').value = kategoriAdiniNormalizeEt(islem.kategori, islemTipiBul(islem));
+    $('formSubmitBtn').textContent = 'Güncelle';
+    $('duzenlemeIptalBtn').style.display = 'block';
+    $('finansForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function duzenlemeyiIptalEt() {
@@ -290,11 +265,11 @@ function duzenlemeyiIptalEt() {
 
 function formuSifirla() {
     duzenlenenIslemId = null;
-    document.getElementById('finansForm').reset();
+    $('finansForm').reset();
     kategoriSecenekleriniGuncelle();
     tarihAlaniniBuguneAyarla();
-    document.getElementById('formSubmitBtn').textContent = 'Sisteme İşle';
-    document.getElementById('duzenlemeIptalBtn').style.display = 'none';
+    $('formSubmitBtn').textContent = 'Sisteme İşle';
+    $('duzenlemeIptalBtn').style.display = 'none';
 }
 
 async function islemSil(id) {
@@ -306,111 +281,107 @@ async function islemSil(id) {
         return;
     }
 
-    const { error } = await sb
-        .from('islemler')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+    const { error } = await sb.from('islemler').delete().eq('id', id).eq('user_id', user.id);
 
     if (error) {
         alert('Kayıt silinemedi: ' + error.message);
         return;
     }
 
-    await giderleriYukle();
+    await islemleriYukle();
 }
 
-async function aktifKullaniciyiGetir() {
-    if (aktifKullanici) return aktifKullanici;
+function islemleriListele() {
+    const tip = $('tipFiltresi')?.value || 'tum';
+    const donem = $('donemFiltresi')?.value || 'tum';
+    const kategori = $('kategoriFiltresi')?.value || 'tum';
+    const arama = ($('aramaKutusu')?.value || '').toLocaleLowerCase('tr-TR');
 
-    const { data, error } = await sb.auth.getUser();
-
-    if (error || !data.user) return null;
-
-    aktifKullanici = data.user;
-    return aktifKullanici;
-}
-
-function islemleriListele(aramaMetni = '') {
-    const liste = document.getElementById('islemListesi');
-    const toplamBakiye = document.getElementById('toplamBakiye');
-    const aramaKutusu = document.getElementById('aramaKutusu');
-    const tipFiltresi = document.getElementById('tipFiltresi')?.value || 'tum';
-    const donemFiltresi = document.getElementById('donemFiltresi')?.value || 'tum';
-    const kategoriFiltresi = document.getElementById('kategoriFiltresi')?.value || 'tum';
-    const filtre = (aramaMetni || aramaKutusu?.value || '').toLocaleLowerCase('tr-TR');
-
-    liste.innerHTML = '';
-
-    const gosterilecekIslemler = tumIslemler.filter((islem) => {
-        const aciklama = String(islem.aciklama || '').toLocaleLowerCase('tr-TR');
+    filtrelenenIslemler = tumIslemler.filter((islem) => {
         const isGelir = islemTipiBul(islem);
-        const kategori = kategoriAdiniNormalizeEt(islem.kategori, isGelir).toLocaleLowerCase('tr-TR');
-        const metinUyuyor = aciklama.includes(filtre) || kategori.includes(filtre);
-        const tipUyuyor =
-            tipFiltresi === 'tum' ||
-            (tipFiltresi === 'gelir' && isGelir) ||
-            (tipFiltresi === 'gider' && !isGelir);
-        const kategoriUyuyor = kategoriFiltresi === 'tum' || kategoriAdiniNormalizeEt(islem.kategori, isGelir) === kategoriFiltresi;
-        const donemUyuyor = islemDonemeUyuyor(islem, donemFiltresi);
+        const temizKategori = kategoriAdiniNormalizeEt(islem.kategori, isGelir);
+        const aramaMetni = `${islem.aciklama || ''} ${temizKategori}`.toLocaleLowerCase('tr-TR');
 
-        return metinUyuyor && tipUyuyor && kategoriUyuyor && donemUyuyor;
+        return aramaMetni.includes(arama)
+            && (tip === 'tum' || tip === islemTipiMetni(islem))
+            && (kategori === 'tum' || kategori === temizKategori)
+            && islemDonemeUyuyor(islem, donem);
     });
 
-    filtrelenenIslemler = gosterilecekIslemler;
+    listeyiYaz(filtrelenenIslemler);
+    bakiyeyiYaz(filtrelenenIslemler);
+    raporuGuncelle(filtrelenenIslemler);
+}
 
-    if (gosterilecekIslemler.length === 0) {
+function listeyiYaz(islemler) {
+    const liste = $('islemListesi');
+    liste.innerHTML = '';
+
+    if (islemler.length === 0) {
         const li = document.createElement('li');
         li.className = 'bos-liste';
-        li.textContent = tumIslemler.length === 0
-            ? 'Henüz işlem kaydı yok.'
-            : 'Bu filtreye uygun işlem bulunamadı.';
+        li.textContent = tumIslemler.length === 0 ? 'Henüz işlem kaydı yok.' : 'Bu filtreye uygun işlem bulunamadı.';
         liste.appendChild(li);
+        return;
     }
 
-    gosterilecekIslemler.forEach((islem) => {
+    islemler.forEach((islem) => {
         const isGelir = islemTipiBul(islem);
-        const kategori = kategoriAdiniNormalizeEt(islem.kategori, isGelir);
         const li = document.createElement('li');
         li.className = isGelir ? 'gelir-satiri' : 'gider-satiri';
-
         li.innerHTML = `
             <span>
                 <strong>${islem.aciklama}</strong><br>
-                ${islem.tarih || '-'} - ${kategori} - ${Number(islem.miktar).toLocaleString('tr-TR')} TL
+                ${islem.tarih || '-'} - ${kategoriAdiniNormalizeEt(islem.kategori, isGelir)} - ${paraYaz(islem.miktar)}
             </span>
             <span class="islem-actions">
                 <button class="duzenle-btn" type="button" onclick="islemDuzenle(${islem.id})">Düzenle</button>
                 <button class="sil-btn" type="button" onclick="islemSil(${islem.id})">Sil</button>
             </span>
         `;
-
         liste.appendChild(li);
     });
+}
 
-    const bakiye = gosterilecekIslemler.reduce((toplam, islem) => {
+function bakiyeyiYaz(islemler) {
+    const bakiye = islemler.reduce((toplam, islem) => {
         const miktar = Number(islem.miktar) || 0;
-        const isGelir = islemTipiBul(islem);
-        return toplam + (isGelir ? miktar : -miktar);
+        return toplam + (islemTipiBul(islem) ? miktar : -miktar);
     }, 0);
 
-    toplamBakiye.textContent = `${bakiye.toLocaleString('tr-TR')} TL`;
-    toplamBakiye.style.color = bakiye >= 0 ? '#27ae60' : '#e74c3c';
-    raporuGuncelle(gosterilecekIslemler);
+    $('toplamBakiye').textContent = paraYaz(bakiye);
+    $('toplamBakiye').style.color = bakiye >= 0 ? '#27ae60' : '#e74c3c';
+}
+
+function raporuGuncelle(islemler) {
+    const ozet = islemler.reduce((sonuc, islem) => {
+        const miktar = Number(islem.miktar) || 0;
+        const isGelir = islemTipiBul(islem);
+        const kategori = kategoriAdiniNormalizeEt(islem.kategori, isGelir);
+
+        sonuc[isGelir ? 'gelir' : 'gider'] += miktar;
+        sonuc.kategoriler[kategori] = (sonuc.kategoriler[kategori] || 0) + miktar;
+        return sonuc;
+    }, { gelir: 0, gider: 0, kategoriler: {} });
+
+    const net = ozet.gelir - ozet.gider;
+    const oneCikan = Object.entries(ozet.kategoriler).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+
+    $('raporGelir').textContent = paraYaz(ozet.gelir);
+    $('raporGider').textContent = paraYaz(ozet.gider);
+    $('raporNet').textContent = paraYaz(net);
+    $('raporNet').style.color = net >= 0 ? '#27ae60' : '#e74c3c';
+    $('raporKategori').textContent = oneCikan;
 }
 
 function csvDisariAktar() {
-    const aktarilacakIslemler = Array.isArray(filtrelenenIslemler) ? filtrelenenIslemler : tumIslemler;
-
-    if (aktarilacakIslemler.length === 0) {
+    if (filtrelenenIslemler.length === 0) {
         alert('Aktarılacak işlem bulunamadı.');
         return;
     }
 
-    const basliklar = ['Tarih', 'Tip', 'Kategori', 'Açıklama', 'Miktar'];
-    const satirlar = aktarilacakIslemler.map((islem) => {
+    const satirlar = filtrelenenIslemler.map((islem) => {
         const isGelir = islemTipiBul(islem);
-
         return [
             islem.tarih || '',
             isGelir ? 'Gelir' : 'Gider',
@@ -420,79 +391,50 @@ function csvDisariAktar() {
         ];
     });
 
-    const csv = [basliklar, ...satirlar]
+    const csv = [['Tarih', 'Tip', 'Kategori', 'Açıklama', 'Miktar'], ...satirlar]
         .map((satir) => satir.map(csvHucreHazirla).join(';'))
         .join('\n');
-    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
 
+    dosyaIndir(`finans-islemleri-${bugununInputTarihi()}.csv`, `\uFEFF${csv}`, 'text/csv;charset=utf-8;');
+}
+
+function dosyaIndir(dosyaAdi, icerik, tip) {
+    const url = URL.createObjectURL(new Blob([icerik], { type: tip }));
+    const link = document.createElement('a');
     link.href = url;
-    link.download = `finans-islemleri-${bugununInputTarihi()}.csv`;
+    link.download = dosyaAdi;
     link.click();
     URL.revokeObjectURL(url);
 }
 
 function csvHucreHazirla(deger) {
-    const metin = String(deger).replaceAll('"', '""');
-    return `"${metin}"`;
-}
-
-function raporuGuncelle(islemler) {
-    const raporGelir = document.getElementById('raporGelir');
-    const raporGider = document.getElementById('raporGider');
-    const raporNet = document.getElementById('raporNet');
-    const raporKategori = document.getElementById('raporKategori');
-
-    if (!raporGelir || !raporGider || !raporNet || !raporKategori) return;
-
-    const ozet = islemler.reduce((sonuc, islem) => {
-        const miktar = Number(islem.miktar) || 0;
-        const isGelir = islemTipiBul(islem);
-        const kategori = kategoriAdiniNormalizeEt(islem.kategori, isGelir);
-
-        if (isGelir) {
-            sonuc.gelir += miktar;
-        } else {
-            sonuc.gider += miktar;
-        }
-
-        sonuc.kategoriler[kategori] = (sonuc.kategoriler[kategori] || 0) + miktar;
-        return sonuc;
-    }, { gelir: 0, gider: 0, kategoriler: {} });
-
-    const net = ozet.gelir - ozet.gider;
-    const oneCikanKategori = Object.entries(ozet.kategoriler)
-        .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-
-    raporGelir.textContent = `${ozet.gelir.toLocaleString('tr-TR')} TL`;
-    raporGider.textContent = `${ozet.gider.toLocaleString('tr-TR')} TL`;
-    raporNet.textContent = `${net.toLocaleString('tr-TR')} TL`;
-    raporNet.style.color = net >= 0 ? '#27ae60' : '#e74c3c';
-    raporKategori.textContent = oneCikanKategori;
+    return `"${String(deger).replaceAll('"', '""')}"`;
 }
 
 function kategoriFiltresiniGuncelle() {
-    const select = document.getElementById('kategoriFiltresi');
-
-    if (!select) return;
-
+    const select = $('kategoriFiltresi');
     const seciliDeger = select.value;
-    const kategoriler = [...new Set(tumIslemler.map((islem) => kategoriAdiniNormalizeEt(islem.kategori, islemTipiBul(islem))).filter(Boolean))].sort((a, b) =>
-        a.localeCompare(b, 'tr')
-    );
+    const kategoriler = [...new Set(tumIslemler.map((islem) => kategoriAdiniNormalizeEt(islem.kategori, islemTipiBul(islem))))]
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, 'tr'));
 
     select.innerHTML = '<option value="tum">Tüm kategoriler</option>';
-
-    kategoriler.forEach((kategori) => {
-        const option = document.createElement('option');
-        option.value = kategori;
-        option.textContent = kategori;
-        select.appendChild(option);
-    });
+    kategoriler.forEach((kategori) => select.add(new Option(kategori, kategori)));
 
     if ([...select.options].some((option) => option.value === seciliDeger)) {
         select.value = seciliDeger;
+    }
+}
+
+function kategoriSecenekleriniGuncelle() {
+    const kategoriler = $('islemTipi').value === 'gelir' ? gelirKategorileri : giderKategorileri;
+    const seciliKategori = $('kategori').value;
+
+    $('kategori').innerHTML = '<option value="" disabled selected>Kategori Seçin</option>';
+    kategoriler.forEach((kategori) => $('kategori').add(new Option(kategori, kategori)));
+
+    if (kategoriler.includes(seciliKategori)) {
+        $('kategori').value = seciliKategori;
     }
 }
 
@@ -500,55 +442,32 @@ function islemDonemeUyuyor(islem, donem) {
     if (donem === 'tum') return true;
 
     const tarih = tarihMetniniTariheCevir(islem.tarih);
-
     if (!tarih) return false;
 
     const bugun = new Date();
-    const hedefYil = bugun.getFullYear();
     const hedefAy = donem === 'bu-ay' ? bugun.getMonth() : bugun.getMonth() - 1;
-    const hedefTarih = new Date(hedefYil, hedefAy, 1);
+    const hedefTarih = new Date(bugun.getFullYear(), hedefAy, 1);
 
     return tarih.getFullYear() === hedefTarih.getFullYear() && tarih.getMonth() === hedefTarih.getMonth();
 }
 
 function tarihMetniniTariheCevir(tarihMetni) {
-    if (!tarihMetni) return null;
-
-    const parcalar = String(tarihMetni).split('.');
-
-    if (parcalar.length !== 3) return null;
-
-    const [gun, ay, yil] = parcalar.map(Number);
-
-    if (!gun || !ay || !yil) return null;
-
-    return new Date(yil, ay - 1, gun);
+    const [gun, ay, yil] = String(tarihMetni || '').split('.').map(Number);
+    return gun && ay && yil ? new Date(yil, ay - 1, gun) : null;
 }
 
 function tarihInputunuKayitFormatinaCevir(inputTarihi) {
-    if (!inputTarihi) return '';
-
-    const [yil, ay, gun] = inputTarihi.split('-');
-
-    if (!gun || !ay || !yil) return '';
-
-    return `${gun}.${ay}.${yil}`;
+    const [yil, ay, gun] = String(inputTarihi || '').split('-');
+    return gun && ay && yil ? `${gun}.${ay}.${yil}` : '';
 }
 
 function tarihMetniniInputFormatinaCevir(tarihMetni) {
     const tarih = tarihMetniniTariheCevir(tarihMetni);
-
-    if (!tarih) return '';
-
-    return tarihiInputFormatinaCevir(tarih);
+    return tarih ? tarihiInputFormatinaCevir(tarih) : '';
 }
 
 function tarihAlaniniBuguneAyarla() {
-    const tarihInput = document.getElementById('tarih');
-
-    if (tarihInput) {
-        tarihInput.value = bugununInputTarihi();
-    }
+    $('tarih').value = bugununInputTarihi();
 }
 
 function bugununInputTarihi() {
@@ -559,31 +478,7 @@ function tarihiInputFormatinaCevir(tarih) {
     const yil = tarih.getFullYear();
     const ay = String(tarih.getMonth() + 1).padStart(2, '0');
     const gun = String(tarih.getDate()).padStart(2, '0');
-
     return `${yil}-${ay}-${gun}`;
-}
-
-function kategoriSecenekleriniGuncelle() {
-    const tipSelect = document.getElementById('islemTipi');
-    const kategoriSelect = document.getElementById('kategori');
-
-    if (!tipSelect || !kategoriSelect) return;
-
-    const seciliKategori = kategoriSelect.value;
-    const kategoriler = tipSelect.value === 'gelir' ? gelirKategorileri : giderKategorileri;
-
-    kategoriSelect.innerHTML = '<option value="" disabled selected>Kategori Seçin</option>';
-
-    kategoriler.forEach((kategori) => {
-        const option = document.createElement('option');
-        option.value = kategori;
-        option.textContent = kategori;
-        kategoriSelect.appendChild(option);
-    });
-
-    if (kategoriler.includes(seciliKategori)) {
-        kategoriSelect.value = seciliKategori;
-    }
 }
 
 function islemTipiBul(islem) {
@@ -592,16 +487,22 @@ function islemTipiBul(islem) {
     return islem.kategori === 'Gelir';
 }
 
+function islemTipiMetni(islem) {
+    return islemTipiBul(islem) ? 'gelir' : 'gider';
+}
+
 function kategoriAdiniNormalizeEt(kategori, isGelir = false) {
     if (!kategori) return '';
     if (kategori === 'Gelir') return 'Diğer Gelir';
     if (kategori === 'Gider') return 'Diğer Gider';
 
     const temizKategori = kategoriTakmaAdlari[kategori] || kategori;
-
     const izinliKategoriler = isGelir ? gelirKategorileri : giderKategorileri;
+    return izinliKategoriler.includes(temizKategori)
+        ? temizKategori
+        : (isGelir ? 'Diğer Gelir' : 'Diğer Gider');
+}
 
-    if (izinliKategoriler.includes(temizKategori)) return temizKategori;
-
-    return isGelir ? 'Diğer Gelir' : 'Diğer Gider';
+function paraYaz(deger) {
+    return `${Number(deger || 0).toLocaleString('tr-TR')} TL`;
 }
